@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Artemis PetCare</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,'SF Pro Display',sans-serif;background:#b5bda8;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px 16px;gap:24px;flex-wrap:wrap;}
+.phone{width:320px;height:680px;background:#fff;border-radius:40px;overflow:hidden;box-shadow:0 16px 48px rgba(0,0,0,0.18);position:relative;display:flex;flex-direction:column;flex-shrink:0;}
+.view{position:absolute;inset:0;display:flex;flex-direction:column;transform:translateX(105%);transition:transform .32s cubic-bezier(.4,0,.2,1);background:#fff;overflow:hidden;}
+.view.active{transform:translateX(0);}
+.view.prev{transform:translateX(-30px);}
+
+/* STATUS BAR */
+.sbar{display:flex;justify-content:space-between;align-items:center;padding:10px 18px 4px;font-size:12px;font-weight:600;flex-shrink:0;}
+.sbar.dk{color:#111;background:#fff;}
+.sbar.wh{color:#fff;background:transparent;}
+.si{display:flex;gap:4px;align-items:center;}
+
+/* BOTTOM NAV */
+.bnav{display:flex;justify-content:space-around;align-items:center;padding:8px 0 12px;border-top:1px solid #f0f0f0;background:#fff;flex-shrink:0;z-index:10;}
+.ni{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:#aaa;cursor:pointer;padding:0 6px;transition:color .2s;position:relative;}
+.ni.on{color:#7a9a52;}
+.nctr{background:#7a9a52;border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;margin-top:-14px;flex-shrink:0;}
+.nbadge{position:absolute;top:-2px;right:2px;background:#e05555;color:#fff;border-radius:50%;width:16px;height:16px;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+
+/* SCROLL */
+.scroll{flex:1;overflow-y:auto;}
+.scroll::-webkit-scrollbar{width:0;}
+
+/* API BAR */
+.api-bar{background:#1a1a1a;color:#7a9a52;font-size:9px;font-family:monospace;padding:4px 12px;display:flex;align-items:center;gap:5px;flex-shrink:0;overflow:hidden;}
+.api-dot{width:5px;height:5px;border-radius:50%;background:#7a9a52;flex-shrink:0;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+.api-txt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+/* ── HOME ── */
+.home-top{display:flex;align-items:center;gap:10px;padding:8px 16px 6px;}
+.searchbox{flex:1;background:#f0f2f5;border-radius:20px;padding:8px 12px;display:flex;align-items:center;gap:6px;font-size:13px;color:#aaa;}
+.avatar-btn{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#c9956c,#e8b89a);display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;flex-shrink:0;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.15);transition:transform .2s;animation:avatarPulse 2.5s ease-in-out infinite;}
+.avatar-btn:hover{transform:scale(1.08);}
+@keyframes avatarPulse{0%,100%{box-shadow:0 0 0 0 rgba(122,154,82,.4);}50%{box-shadow:0 0 0 6px rgba(122,154,82,0);}}
+.shdr{display:flex;justify-content:space-between;align-items:center;padding:0 16px 8px;}
+.stl{font-size:15px;font-weight:700;color:#111;}
+.slnk{font-size:12px;color:#7a9a52;cursor:pointer;}
+.pets-row{display:flex;gap:10px;padding:0 16px 14px;overflow-x:auto;}
+.pets-row::-webkit-scrollbar{height:0;}
+.pcard{text-align:center;flex-shrink:0;cursor:pointer;}
+.pimg{width:116px;height:90px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:40px;position:relative;}
+.pbadge{position:absolute;top:-5px;right:-5px;background:#5b87d8;color:#fff;border-radius:50%;width:20px;height:20px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid #fff;}
+.pname{font-size:13px;font-weight:700;margin-top:4px;color:#111;}
+.pbreed{font-size:11px;color:#aaa;}
+.appts-row{display:flex;gap:8px;padding:0 16px 14px;}
+.acard{flex:1;border-radius:16px;padding:11px 12px;position:relative;overflow:hidden;cursor:pointer;}
+.abl{background:#5b87d8;}.aor{background:#c9883a;}.agr{background:#7a9a52;}
+.atitle{font-size:12px;font-weight:700;color:#fff;line-height:1.3;}
+.adate{font-size:11px;color:rgba(255,255,255,.8);margin-top:2px;}
+.afoot{display:flex;align-items:center;gap:5px;margin-top:8px;}
+.aperson{font-size:10px;color:rgba(255,255,255,.85);}
+.astatus{font-size:9px;font-weight:700;background:rgba(255,255,255,.25);color:#fff;padding:2px 7px;border-radius:8px;display:inline-block;margin-top:4px;}
+.notif-banner{background:#f0f6e8;border-radius:14px;padding:11px 14px;margin:0 16px 12px;display:flex;align-items:center;gap:10px;cursor:pointer;}
+.notif-dot{width:8px;height:8px;border-radius:50%;background:#7a9a52;flex-shrink:0;}
+.notif-txt{font-size:12px;color:#4a6e28;flex:1;line-height:1.4;}
+
+/* ── CALENDAR ── */
+.cal-head{background:#7a9a52;padding:0 18px 16px;flex-shrink:0;}
+.cal-topbar{display:flex;justify-content:space-between;align-items:center;padding:6px 0 12px;}
+.hbg{display:flex;flex-direction:column;gap:4px;cursor:pointer;}
+.hbg span{width:20px;height:2px;background:#fff;border-radius:2px;display:block;}
+.mnav{display:flex;gap:8px;}
+.mnbtn{background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:8px;width:26px;height:26px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;}
+.uav{width:34px;height:34px;border-radius:50%;background:#d4b896;border:2px solid rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;}
+.cal-mttl{font-size:22px;font-weight:700;color:#fff;margin-bottom:12px;}
+.cdh{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:4px;}
+.cdhl{text-align:center;font-size:11px;color:rgba(255,255,255,.65);font-weight:600;}
+.cgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;}
+.cc{text-align:center;font-size:13px;color:rgba(255,255,255,.85);cursor:pointer;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;margin:1px auto;transition:background .15s;position:relative;}
+.cc:hover{background:rgba(255,255,255,.15);}
+.cc.oth{color:rgba(255,255,255,.3);}
+.cc.tod{background:#4a7a28;color:#fff;font-weight:700;}
+.cc.sel{background:#fff;color:#4a7a28;font-weight:700;}
+.cc.hev::after{content:'';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.75);}
+.cc.sel.hev::after{background:#7a9a52;}
+.swipebar{display:flex;justify-content:center;margin-top:8px;}
+.swipebar div{width:32px;height:3px;background:rgba(255,255,255,.4);border-radius:2px;}
+.cal-body{flex:1;overflow-y:auto;padding:16px 18px 8px;}
+.dayttl{font-size:20px;font-weight:800;color:#111;margin-bottom:14px;}
+.evrow{display:flex;align-items:flex-start;gap:12px;padding-bottom:14px;position:relative;}
+.evrow:not(:last-child)::before{content:'';position:absolute;left:11px;top:24px;bottom:0;width:1.5px;background:#eee;z-index:0;}
+.edot{width:24px;height:24px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;z-index:1;margin-top:2px;}
+.d-done{background:#ff8c42;}.d-prog{background:#fff;border:2px solid #7a9a52;}.d-pend{background:#fff;border:2px solid #ddd;}
+.ebody{flex:1;}
+.ename{font-size:13px;font-weight:700;color:#111;}
+.etime{font-size:11px;color:#aaa;margin-top:1px;}
+.ebadge{font-size:10px;font-weight:600;padding:3px 10px;border-radius:10px;display:inline-block;margin-top:3px;}
+.b-done{background:#ffe8d8;color:#ff8c42;}.b-prog{background:#e8f5e0;color:#5a8a2e;}.b-pend{background:#f0f2f5;color:#888;}
+.fab{position:absolute;bottom:66px;right:16px;width:50px;height:50px;background:#ff8c42;border-radius:14px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(255,140,66,.4);font-size:26px;color:#fff;z-index:5;}
+
+/* ── PET PROFILE ── */
+.phero{height:188px;background:linear-gradient(180deg,#8aab6c,#c9a96e);display:flex;align-items:flex-end;padding:14px 16px;position:relative;flex-shrink:0;}
+.phback{position:absolute;top:12px;left:14px;color:#fff;font-size:22px;cursor:pointer;background:none;border:none;}
+.phname{font-size:24px;font-weight:700;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.25);}
+.phsub{font-size:11px;color:rgba(255,255,255,.85);}
+.phtabs{display:flex;padding:0 14px;gap:2px;border-bottom:1px solid #f0f0f0;flex-shrink:0;overflow-x:auto;}
+.phtabs::-webkit-scrollbar{height:0;}
+.ptab{padding:9px 10px;font-size:12px;color:#aaa;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;flex-shrink:0;}
+.ptab.on{color:#5b87d8;border-bottom-color:#5b87d8;font-weight:600;}
+.phbody{flex:1;overflow-y:auto;padding:12px 16px;}
+.gcbtn{margin:10px 16px 0;background:#5b87d8;color:#fff;border:none;border-radius:24px;padding:11px;font-size:14px;font-weight:600;width:calc(100% - 32px);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;flex-shrink:0;}
+.prow{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.addlnk{font-size:12px;color:#5b87d8;cursor:pointer;}
+.appt-item{border-radius:14px;padding:11px 14px;margin-bottom:10px;position:relative;overflow:hidden;}
+.ai-or{background:#c9883a;}.ai-bl{background:#5b87d8;}.ai-gr{background:#7a9a52;}
+.ait{font-size:13px;font-weight:700;color:#fff;}
+.aid{font-size:11px;color:rgba(255,255,255,.8);margin-top:2px;}
+.aistatus{font-size:9px;font-weight:700;background:rgba(255,255,255,.25);color:#fff;padding:2px 8px;border-radius:8px;display:inline-block;margin-top:5px;}
+.hitem{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #f5f5f5;}
+.hcirc{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.hg{background:#eaf4e8;}.ho{background:#fdf0e0;}.hb{background:#e8f0fd;}.hp{background:#f0e8f8;}
+.hinfo{flex:1;}
+.hname{font-size:13px;font-weight:600;color:#111;}
+.hdays{font-size:11px;color:#888;}
+.hmed{font-size:10px;color:#aaa;}
+.harr{color:#ccc;font-size:16px;}
+.hcard{background:#f7f9fc;border-radius:14px;padding:13px;margin-bottom:11px;}
+.hctitle{font-size:13px;font-weight:700;color:#111;margin-bottom:7px;}
+.hcrow{display:flex;justify-content:space-between;margin-bottom:4px;}
+.hclbl{font-size:11px;color:#888;}
+.hcval{font-size:11px;font-weight:600;color:#333;}
+.wbar{height:8px;border-radius:4px;background:#eee;overflow:hidden;margin-top:8px;}
+.wfill{height:100%;border-radius:4px;}
+.ficha-item{border-left:3px solid #7a9a52;padding:10px 13px;margin-bottom:10px;background:#f7f9fc;border-radius:0 10px 10px 0;}
+.fi-date{font-size:10px;color:#aaa;margin-bottom:2px;}
+.fi-title{font-size:13px;font-weight:700;color:#111;}
+.fi-detail{font-size:11px;color:#666;margin-top:3px;line-height:1.4;}
+.fi-tag{font-size:10px;font-weight:600;padding:2px 8px;border-radius:8px;display:inline-block;margin-top:4px;}
+.ft-open{background:#e8f5e0;color:#4a8a28;}.ft-closed{background:#f0f0f0;color:#888;}
+
+/* ── NOTIFICATIONS ── */
+.notif-vhead{padding:12px 16px 10px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #f0f0f0;flex-shrink:0;}
+.notif-vttl{font-size:17px;font-weight:700;color:#111;flex:1;}
+.markall{font-size:12px;color:#7a9a52;cursor:pointer;}
+.nitem{display:flex;align-items:flex-start;gap:12px;padding:13px 16px;border-bottom:1px solid #f5f5f5;cursor:pointer;transition:background .15s;}
+.nitem.unread{background:#f0f6e8;}
+.niico{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.ni-c{background:#e8f0fd;}.ni-s{background:#f0f6e8;}.ni-a{background:#fdf0e0;}.ni-su{background:#f0e8f8;}
+.nibody{flex:1;}
+.nititle{font-size:13px;font-weight:600;color:#111;}
+.nimsg{font-size:11px;color:#888;margin-top:2px;line-height:1.4;}
+.nitime{font-size:10px;color:#bbb;margin-top:4px;}
+.nidot{width:8px;height:8px;border-radius:50%;background:#7a9a52;flex-shrink:0;margin-top:6px;}
+
+/* ── CLINICS ── */
+.clinic-vhead{padding:12px 16px 10px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #f0f0f0;flex-shrink:0;}
+.clinic-vttl{font-size:17px;font-weight:700;color:#111;flex:1;}
+.citem{display:flex;gap:12px;padding:13px 16px;border-bottom:1px solid #f5f5f5;cursor:pointer;transition:background .15s;}
+.citem:hover{background:#fafafa;}
+.clogo{width:46px;height:46px;border-radius:14px;background:#e8f0fd;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.cinfo{flex:1;}
+.cname{font-size:14px;font-weight:700;color:#111;}
+.caddr{font-size:11px;color:#888;margin-top:2px;}
+.ctags{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;}
+.ctag{font-size:10px;font-weight:600;padding:2px 8px;border-radius:8px;}
+.ct-p{background:#fdf0e0;color:#c9883a;}.ct-a{background:#e8f5e0;color:#4a8a28;}.ct-s{background:#e8f0fd;color:#5b87d8;}.ct-n{background:#f5f5f5;color:#888;cursor:pointer;}
+.crating{display:flex;align-items:center;gap:3px;margin-top:4px;font-size:11px;color:#888;}
+
+/* ── USER PROFILE ── */
+.pv-topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 18px 6px;flex-shrink:0;}
+.pv-back{background:none;border:none;font-size:20px;color:#555;cursor:pointer;padding:4px;}
+.pv-title{font-size:16px;font-weight:700;color:#111;}
+.pv-settings{background:none;border:none;cursor:pointer;padding:4px;}
+.profile-card{margin:4px 16px 16px;background:#f8f9fa;border-radius:20px;padding:18px 16px;display:flex;align-items:center;gap:14px;}
+.profile-avatar-wrap{position:relative;flex-shrink:0;}
+.profile-avatar{width:68px;height:68px;border-radius:50%;background:linear-gradient(135deg,#c9956c,#e8b89a);display:flex;align-items:center;justify-content:center;font-size:30px;border:3px solid #fff;box-shadow:0 4px 12px rgba(0,0,0,.12);}
+.cam-badge{position:absolute;bottom:0;right:0;width:22px;height:22px;background:#7a9a52;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff;cursor:pointer;}
+.profile-info{flex:1;}
+.profile-name{font-size:16px;font-weight:700;color:#111;}
+.profile-handle{font-size:12px;color:#888;margin-top:2px;}
+.profile-role{font-size:11px;color:#7a9a52;font-weight:600;margin-top:4px;background:#e8f5e0;padding:2px 8px;border-radius:8px;display:inline-block;}
+.edit-profile-btn{background:#5b87d8;color:#fff;border:none;border-radius:20px;padding:7px 16px;font-size:12px;font-weight:600;cursor:pointer;margin-top:8px;transition:opacity .2s;}
+.edit-profile-btn:hover{opacity:.85;}
+.menu-section{padding:0 16px 8px;}
+.menu-group{background:#f8f9fa;border-radius:16px;overflow:hidden;margin-bottom:10px;}
+.menu-item{display:flex;align-items:center;gap:14px;padding:12px 14px;border-bottom:1px solid #f0f0f0;cursor:pointer;transition:background .15s;}
+.menu-item:last-child{border-bottom:none;}
+.menu-item:hover{background:#f0f2f5;}
+.menu-icon{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.mi-green{background:#e8f5e0;color:#4a8a28;}
+.mi-blue{background:#e8f0fd;color:#5b87d8;}
+.mi-orange{background:#fdf0e0;color:#c9883a;}
+.mi-red{background:#fde8e8;color:#e05555;}
+.mi-gray{background:#f0f0f0;color:#666;}
+.menu-label{flex:1;font-size:13px;font-weight:500;color:#111;}
+.menu-value{font-size:11px;color:#aaa;margin-right:4px;}
+.menu-arrow{color:#ccc;font-size:16px;}
+.menu-item.danger .menu-label{color:#e05555;}
+
+/* ── EDIT PROFILE ── */
+.ep-topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 18px 6px;flex-shrink:0;}
+.ep-back{background:none;border:none;font-size:20px;color:#555;cursor:pointer;padding:4px;}
+.ep-title{font-size:16px;font-weight:700;color:#111;}
+.ep-save-icon{background:none;border:none;cursor:pointer;padding:4px;font-size:18px;color:#7a9a52;}
+.ep-avatar-wrap{display:flex;justify-content:center;padding:10px 0 18px;flex-shrink:0;}
+.ep-avatar{width:78px;height:78px;border-radius:50%;background:linear-gradient(135deg,#c9956c,#e8b89a);display:flex;align-items:center;justify-content:center;font-size:34px;border:3px solid #fff;box-shadow:0 4px 14px rgba(0,0,0,.12);position:relative;cursor:pointer;}
+.ep-cam{position:absolute;bottom:2px;right:2px;width:24px;height:24px;background:#7a9a52;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff;}
+.ep-form{padding:0 18px 20px;}
+.flbl{font-size:13px;font-weight:700;color:#111;margin-bottom:6px;margin-top:14px;}
+.flbl:first-child{margin-top:0;}
+.finput{width:100%;border:1.5px solid #eee;border-radius:12px;padding:11px 14px;font-size:13px;color:#333;outline:none;background:#f8f9fa;font-family:inherit;transition:border .2s,background .2s;}
+.finput:focus{border-color:#7a9a52;background:#fff;}
+.finput.pw{padding-right:42px;}
+.finput-wrap{position:relative;}
+.finput-eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:#aaa;font-size:16px;background:none;border:none;}
+.phone-row{display:flex;gap:8px;}
+.phone-code{width:68px;border:1.5px solid #eee;border-radius:12px;padding:11px 8px;font-size:13px;color:#333;background:#f8f9fa;outline:none;text-align:center;font-family:inherit;}
+.phone-num{flex:1;border:1.5px solid #eee;border-radius:12px;padding:11px 14px;font-size:13px;color:#333;outline:none;background:#f8f9fa;font-family:inherit;}
+.phone-num:focus{border-color:#7a9a52;background:#fff;}
+.ep-save-btn{width:100%;background:#7a9a52;color:#fff;border:none;border-radius:16px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;margin-top:18px;transition:opacity .2s;}
+.ep-save-btn:hover{opacity:.88;}
+.api-hint{background:#f0f6e8;border-radius:10px;padding:7px 12px;margin-bottom:14px;font-size:11px;color:#4a8a28;font-family:monospace;}
+
+/* MODAL */
+.modal{position:absolute;inset:0;background:rgba(0,0,0,.4);display:none;align-items:flex-end;z-index:20;}
+.modal.open{display:flex;}
+.msheet{background:#fff;border-radius:24px 24px 0 0;width:100%;max-height:88%;overflow-y:auto;}
+.mhead{padding:13px 18px;border-radius:24px 24px 0 0;display:flex;justify-content:space-between;align-items:center;}
+.mttl{font-size:16px;font-weight:700;color:#fff;}
+.mx{color:rgba(255,255,255,.85);font-size:22px;cursor:pointer;background:none;border:none;line-height:1;}
+.mbody{padding:16px 18px;}
+.mlbl{font-size:13px;font-weight:700;color:#111;margin-bottom:6px;}
+.minput{width:100%;border:1.5px solid #e8e8e8;border-radius:10px;padding:9px 12px;font-size:13px;color:#333;outline:none;font-family:inherit;margin-bottom:13px;transition:border .2s;}
+.minput:focus{border-color:#7a9a52;}
+.mselect{width:100%;border:1.5px solid #e8e8e8;border-radius:10px;padding:9px 12px;font-size:13px;color:#333;outline:none;font-family:inherit;margin-bottom:13px;background:#fff;}
+.mrow2{display:flex;gap:10px;}
+.mrow2>div{flex:1;}
+.msave{width:100%;border:none;border-radius:16px;padding:13px;font-size:15px;font-weight:700;color:#fff;cursor:pointer;margin-top:4px;}
+
+/* TOAST */
+.toast{position:absolute;bottom:76px;left:50%;transform:translateX(-50%) translateY(12px);background:#111;color:#fff;font-size:12px;padding:9px 18px;border-radius:20px;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;z-index:30;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* INFO PANEL */
+.info-panel{width:280px;display:flex;flex-direction:column;gap:14px;}
+.ipcard{background:#fff;border-radius:20px;padding:16px;box-shadow:0 4px 20px rgba(0,0,0,.08);}
+.iptitle{font-size:11px;font-weight:700;color:#7a9a52;margin-bottom:11px;text-transform:uppercase;letter-spacing:.5px;}
+.ep2{background:#f7f9fc;border-radius:9px;padding:7px 11px;margin-bottom:7px;}
+.epm{font-size:9px;font-weight:700;padding:2px 5px;border-radius:4px;display:inline-block;margin-bottom:2px;}
+.ep-g{background:#e8f5e0;color:#4a8a28;}.ep-po{background:#e8f0fd;color:#5b87d8;}.ep-pu{background:#fdf0e0;color:#c9883a;}.ep-d{background:#fde8e8;color:#e05555;}
+.epath{font-size:11px;color:#333;font-family:monospace;}
+.epdesc{font-size:10px;color:#888;margin-top:2px;}
+.sf{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f0f0f0;font-size:11px;}
+.sfn{color:#5b87d8;font-family:monospace;font-weight:600;}
+.sft{color:#c9883a;font-family:monospace;}
+.sfr{color:#e05555;font-size:9px;font-weight:700;}
+.screen-map{display:flex;flex-direction:column;gap:6px;}
+.smap-item{display:flex;align-items:center;gap:8px;padding:6px 10px;background:#f7f9fc;border-radius:9px;cursor:pointer;transition:background .15s;}
+.smap-item:hover{background:#e8f5e0;}
+.smap-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.smap-name{font-size:12px;font-weight:600;color:#111;flex:1;}
+.smap-api{font-size:10px;color:#aaa;font-family:monospace;}
+</style>
+</head>
+<body>
+
+<!-- ═══════════ PHONE ═══════════ -->
+<div class="phone" id="phone">
+
+  <!-- HOME -->
+  <div class="view active" id="v-home">
+    <div class="api-bar"><div class="api-dot"></div><div class="api-txt">GET /mascotas/mis-mascotas · GET /citas · GET /notificaciones/contador</div></div>
+    <div class="sbar dk"><span>12:22</span><div class="si"><svg width="15" height="10" viewBox="0 0 15 10" fill="none"><rect x="0" y="3.5" width="3" height="6.5" rx="1" fill="#333"/><rect x="4" y="2" width="3" height="8" rx="1" fill="#333"/><rect x="8" y=".5" width="3" height="9.5" rx="1" fill="#333"/></svg><svg width="20" height="10" viewBox="0 0 20 10" fill="none"><rect x=".5" y=".5" width="16" height="9" rx="1.5" stroke="#333"/><rect x="1.5" y="1.5" width="12" height="7" rx="1" fill="#333"/></svg></div></div>
+    <div class="scroll">
+      <div class="home-top">
+        <div class="searchbox"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="#aaa" stroke-width="1.4"/><path d="M9 9l2.5 2.5" stroke="#aaa" stroke-width="1.4" stroke-linecap="round"/></svg><span>Buscar artículos...</span></div>
+        <svg onclick="nav('v-notifs')" style="cursor:pointer;flex-shrink:0;" width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M11 2a5.5 5.5 0 00-5.5 5.5v1.5L3 12v1h16v-1l-2.5-3V7.5A5.5 5.5 0 0011 2z" stroke="#555" stroke-width="1.4"/><path d="M9 14a2 2 0 004 0" stroke="#555" stroke-width="1.4"/><circle cx="15" cy="5" r="4.5" fill="#e05555"/><text x="15" y="7.5" font-size="5.5" fill="white" text-anchor="middle" font-weight="bold" font-family="sans-serif">3</text></svg>
+        <!-- AVATAR → USER PROFILE -->
+        <div class="avatar-btn" id="homeAvatar" onclick="nav('v-user-profile')" title="Mi perfil">👩</div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;padding:0 16px 8px;">
+        <div style="background:#7a9a52;color:#fff;font-size:10px;padding:4px 10px;border-radius:20px;display:flex;align-items:center;gap:5px;cursor:pointer;" onclick="nav('v-user-profile')">👋 <span>Hola, María — Ver perfil</span></div>
+      </div>
+      <div class="notif-banner" onclick="nav('v-notifs')"><div class="notif-dot"></div><div class="notif-txt">3 notificaciones sin leer — cita de Bella aprobada</div><span style="color:#7a9a52;font-size:14px;">›</span></div>
+      <div class="shdr"><span class="stl">Mis mascotas</span></div>
+      <div class="pets-row" id="petsRow"></div>
+      <div class="shdr"><span class="stl">Próximas citas</span><span class="slnk" onclick="nav('v-cal')">Ver todas ›</span></div>
+      <div class="appts-row" id="apptsRow"></div>
+      <div style="padding:0 16px 14px;"><div onclick="nav('v-clinics')" style="background:#7a9a52;border-radius:16px;padding:13px 15px;color:#fff;display:flex;justify-content:space-between;align-items:center;cursor:pointer;"><div><div style="font-size:10px;opacity:.8;margin-bottom:2px;">Clínica suscrita</div><div style="font-size:13px;font-weight:700;">VetPlus — Av. 18 de Julio</div></div><span style="font-size:22px;">🏥</span></div></div>
+    </div>
+    <div class="bnav">
+      <div class="ni on"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 9.5L10 3l7 6.5V17a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" stroke="currentColor" stroke-width="1.5"/><path d="M7 18v-5h6v5" stroke="currentColor" stroke-width="1.5"/></svg><span>Inicio</span></div>
+      <div class="ni" onclick="nav('v-clinics')"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2C7 2 4.5 4.5 4.5 7.5c0 4.5 5.5 10 5.5 10s5.5-5.5 5.5-10C15.5 4.5 13 2 10 2z" stroke="currentColor" stroke-width="1.5"/><circle cx="10" cy="7.5" r="2" stroke="currentColor" stroke-width="1.5"/></svg><span>Clínicas</span></div>
+      <div class="ni" style="align-items:center;" onclick="openModal('m-cita')"><div class="nctr">＋</div><span style="color:#7a9a52;font-size:10px;margin-top:2px;">Cita</span></div>
+      <div class="ni" onclick="nav('v-cal')"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2.5" y="3.5" width="15" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M6 2v3M14 2v3M2.5 8h15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="7" cy="12" r="1" fill="currentColor"/><circle cx="10" cy="12" r="1" fill="currentColor"/><circle cx="13" cy="12" r="1" fill="currentColor"/><circle cx="7" cy="15" r="1" fill="currentColor"/></svg><span>Calendario</span></div>
+      <div class="ni" onclick="nav('v-user-profile')" style="position:relative;"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 17c0-3.3 3.1-6 7-6s7 2.7 7 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><span>Perfil</span></div>
+    </div>
+  </div>
+
+  <!-- CALENDAR -->
+  <div class="view" id="v-cal">
+    <div class="api-bar"><div class="api-dot"></div><div class="api-txt">GET /citas?fecha_desde=&fecha_hasta=&estado=APROBADA</div></div>
+    <div class="sbar wh" style="background:#7a9a52;flex-shrink:0;"><span>12:22</span></div>
+    <div class="cal-head">
+      <div class="cal-topbar"><div class="hbg"><span></span><span></span><span></span></div><div class="mnav"><button class="mnbtn" onclick="chMon(-1)">‹</button><button class="mnbtn" onclick="chMon(1)">›</button></div><div class="uav" onclick="nav('v-pet-profile')">🐕</div></div>
+      <div class="cal-mttl" id="monLbl">Marzo 2026</div>
+      <div class="cdh"><div class="cdhl">L</div><div class="cdhl">M</div><div class="cdhl">X</div><div class="cdhl">J</div><div class="cdhl">V</div><div class="cdhl">S</div><div class="cdhl">D</div></div>
+      <div class="cgrid" id="cgrid"></div>
+      <div class="swipebar"><div></div></div>
+    </div>
+    <div class="cal-body"><div class="dayttl" id="dayTtl">Hoy</div><div id="evList"></div></div>
+    <button class="fab" onclick="openModal('m-cita')">+</button>
+    <div class="bnav">
+      <div class="ni" onclick="nav('v-home')"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 9.5L10 3l7 6.5V17a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" stroke="currentColor" stroke-width="1.5"/><path d="M7 18v-5h6v5" stroke="currentColor" stroke-width="1.5"/></svg><span>Inicio</span></div>
+      <div class="ni" onclick="nav('v-clinics')"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2C7 2 4.5 4.5 4.5 7.5c0 4.5 5.5 10 5.5 10s5.5-5.5 5.5-10C15.5 4.5 13 2 10 2z" stroke="currentColor" stroke-width="1.5"/></svg><span>Clínicas</span></div>
+      <div class="ni" style="align-items:center;" onclick="openModal('m-cita')"><div class="nctr">＋</div><span style="color:#7a9a52;font-size:10px;margin-top:2px;">Cita</span></div>
+      <div class="ni on"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2.5" y="3.5" width="15" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M6 2v3M14 2v3M2.5 8h15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="7" cy="12" r="1" fill="currentColor"/><circle cx="10" cy="12" r="1" fill="currentColor"/><circle cx="13" cy="12" r="1" fill="currentColor"/><circle cx="7" cy="15" r="1" fill="currentColor"/></svg><span>Calendario</span></div>
+      <div class="ni" onclick="nav('v-user-profile')" style="position:relative;"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 17c0-3.3 3.1-6 7-6s7 2.7 7 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><div class="nbadge" id="nb2">3</div><span>Perfil</span></div>
+    </div>
+  </div>
+
+  <!-- PET PROFILE -->
+  <div class="view" id="v-pet-profile">
+    <div class="api-bar"><div class="api-dot"></div><div class="api-txt">GET /mascotas/1 · GET /fichas?id_mascota=1 · GET /mascotas/1/condiciones</div></div>
+    <div class="sbar wh" style="background:linear-gradient(135deg,#8aab6c,#c9a96e);flex-shrink:0;"><span>12:22</span></div>
+    <div class="phero"><button class="phback" onclick="back()">←</button><div style="font-size:44px;position:absolute;top:50%;left:50%;transform:translate(-50%,-58%);">🐕</div><div><div class="phname">Bella</div><div class="phsub">Golden Retriever · Hembra · 2.5a · 28.4 kg</div></div></div>
+    <button class="gcbtn" onclick="openModal('m-cita')">✚ Solicitar cita — POST /citas</button>
+    <div class="phtabs"><div class="ptab on" onclick="switchTab(0)">Resumen</div><div class="ptab" onclick="switchTab(1)">Historial</div><div class="ptab" onclick="switchTab(2)">Salud</div><div class="ptab" onclick="switchTab(3)">Fichas</div></div>
+    <div class="phbody" id="tab0">
+      <div class="prow"><span class="stl">Citas</span><span class="addlnk" onclick="openModal('m-cita')">+ Nueva</span></div>
+      <div id="profileCitas"></div>
+      <div class="prow" style="margin-top:2px;"><span class="stl">Preventivo</span><span class="addlnk">+ Agregar</span></div>
+      <div class="hitem"><div class="hcirc hg">💊</div><div class="hinfo"><div class="hname">Desparasitación interna</div><div class="hdays">22 días restantes</div><div class="hmed">Bob Martin Dewormer</div></div><div class="harr">›</div></div>
+      <div class="hitem"><div class="hcirc ho">🧴</div><div class="hinfo"><div class="hname">Antipulgas</div><div class="hdays">6 días restantes</div><div class="hmed">Bob Martin Flea</div></div><div class="harr">›</div></div>
+      <div class="hitem"><div class="hcirc hp">💉</div><div class="hinfo"><div class="hname">Vacuna antirrábica</div><div class="hdays">45 días restantes</div><div class="hmed">Booster anual</div></div><div class="harr">›</div></div>
+    </div>
+    <div class="phbody" id="tab1" style="display:none;"><div id="histList"></div></div>
+    <div class="phbody" id="tab2" style="display:none;">
+      <div class="hcard"><div class="hctitle">📊 Peso vs. ideal</div><div class="hcrow"><span class="hclbl">Peso actual</span><span class="hcval">28.4 kg</span></div><div class="hcrow"><span class="hclbl">Rango ideal</span><span class="hcval">25–32 kg</span></div><div class="hcrow"><span class="hclbl">Estado</span><span class="hcval" style="color:#4a8a28;">✓ Dentro del rango</span></div><div class="wbar"><div class="wfill" style="width:55%;background:#7a9a52;"></div></div></div>
+      <div class="hcard"><div class="hctitle">📏 Medidas</div><div class="hcrow"><span class="hclbl">Cuello</span><span class="hcval">38 cm</span></div><div class="hcrow"><span class="hclbl">Pecho</span><span class="hcval">62 cm</span></div><div class="hcrow"><span class="hclbl">Panza</span><span class="hcval">58 cm</span></div></div>
+      <div class="hcard"><div class="hctitle">🏥 Condiciones</div><div style="font-size:13px;color:#4a8a28;font-weight:600;">✓ Sin condiciones activas</div></div>
+      <div class="hcard"><div class="hctitle">ℹ️ Datos</div><div class="hcrow"><span class="hclbl">Microchip</span><span class="hcval">985112000456789</span></div><div class="hcrow"><span class="hclbl">Vive</span><span class="hcval">Dentro de casa</span></div><div class="hcrow"><span class="hclbl">Esterilizada</span><span class="hcval">No</span></div></div>
+    </div>
+    <div class="phbody" id="tab3" style="display:none;"><div id="fichasList"></div></div>
+    <div class="bnav">
+      <div class="ni" onclick="nav('v-home')"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 9.5L10 3l7 6.5V17a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" stroke="currentColor" stroke-width="1.5"/><path d="M7 18v-5h6v5" stroke="currentColor" stroke-width="1.5"/></svg><span>Inicio</span></div>
+      <div class="ni" onclick="nav('v-clinics')"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2C7 2 4.5 4.5 4.5 7.5c0 4.5 5.5 10 5.5 10s5.5-5.5 5.5-10C15.5 4.5 13 2 10 2z" stroke="currentColor" stroke-width="1.5"/></svg><span>Clínicas</span></div>
+      <div class="ni" style="align-items:center;" onclick="openModal('m-cita')"><div class="nctr">＋</div><span style="color:#7a9a52;font-size:10px;margin-top:2px;">Cita</span></div>
+      <div class="ni" onclick="nav('v-cal')"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2.5" y="3.5" width="15" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/></svg><span>Calendario</span></div>
+      <div class="ni on"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="4" cy="10" r="1.5" fill="currentColor"/><circle cx="10" cy="10" r="1.5" fill="currentColor"/><circle cx="16" cy="10" r="1.5" fill="currentColor"/></svg><span>Más</span></div>
+    </div>
+  </div>
+
+  <!-- NOTIFICATIONS -->
+  <div class="view" id="v-notifs">
+    <div class="api-bar"><div class="api-dot"></div><div class="api-txt">GET /notificaciones · POST /notificaciones/{id}/marcar-leida</div></div>
+    <div class="sbar dk" style="flex-shrink:0;"><span>12:22</span></div>
+    <div class="notif-vhead"><button onclick="back()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#555;">←</button><div class="notif-vttl">Notificaciones</div><span class="markall" onclick="markAllRead()">Marcar todas ✓</span></div>
+    <div class="scroll" id="notifList"></div>
+    <div class="bnav">
+      <div class="ni" onclick="nav('v-home')"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 9.5L10 3l7 6.5V17a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" stroke="currentColor" stroke-width="1.5"/><path d="M7 18v-5h6v5" stroke="currentColor" stroke-width="1.5"/></svg><span>Inicio</span></div>
+      <div class="ni" onclick="nav('v-clinics')"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2C7 2 4.5 4.5 4.5 7.5c0 4.5 5.5 10 5.5 10s5.5-5.5 5.5-10C15.5 4.5 13 2 10 2z" stroke="currentColor" stroke-width="1.5"/></svg><span>Clínicas</span></div>
+      <div class="ni" style="align-items:center;" onclick="openModal('m-cita')"><div class="nctr">＋</div><span style="color:#7a9a52;font-size:10px;margin-top:2px;">Cita</span></div>
+      <div class="ni" onclick="nav('v-cal')"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2.5" y="3.5" width="15" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/></svg><span>Calendario</span></div>
+      <div class="ni on" style="position:relative;"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2a5 5 0 00-5 5v1.5L3 11v1h14v-1l-2-2.5V7a5 5 0 00-5-5z" stroke="currentColor" stroke-width="1.5"/><path d="M8 13a2 2 0 004 0" stroke="currentColor" stroke-width="1.5"/></svg><div class="nbadge" id="nb3">3</div><span>Alertas</span></div>
+    </div>
+  </div>
+
+  <!-- CLINICS -->
+  <div class="view" id="v-clinics">
+    <div class="api-bar"><div class="api-dot"></div><div class="api-txt">GET /clinicas · POST /suscripciones-clinicas</div></div>
+    <div class="sbar dk" style="flex-shrink:0;"><span>12:22</span></div>
+    <div class="clinic-vhead"><button onclick="back()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#555;">←</button><div class="clinic-vttl">Clínicas veterinarias</div></div>
+    <div class="scroll" id="clinicList"></div>
+    <div class="bnav">
+      <div class="ni" onclick="nav('v-home')"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 9.5L10 3l7 6.5V17a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" stroke="currentColor" stroke-width="1.5"/><path d="M7 18v-5h6v5" stroke="currentColor" stroke-width="1.5"/></svg><span>Inicio</span></div>
+      <div class="ni on"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2C7 2 4.5 4.5 4.5 7.5c0 4.5 5.5 10 5.5 10s5.5-5.5 5.5-10C15.5 4.5 13 2 10 2z" stroke="currentColor" stroke-width="1.5"/><circle cx="10" cy="7.5" r="2" stroke="currentColor" stroke-width="1.5"/></svg><span>Clínicas</span></div>
+      <div class="ni" style="align-items:center;" onclick="openModal('m-cita')"><div class="nctr">＋</div><span style="color:#7a9a52;font-size:10px;margin-top:2px;">Cita</span></div>
+      <div class="ni" onclick="nav('v-cal')"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2.5" y="3.5" width="15" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/></svg><span>Calendario</span></div>
+      <div class="ni" onclick="nav('v-user-profile')"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 17c0-3.3 3.1-6 7-6s7 2.7 7 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><span>Perfil</span></div>
+    </div>
+  </div>
+
+  <!-- USER PROFILE -->
+  <div class="view" id="v-user-profile">
+    <div class="api-bar"><div class="api-dot"></div><div class="api-txt">GET /auth/me · GET /suscripciones-clinicas · GET /notificaciones/contador</div></div>
+    <div class="sbar dk" style="flex-shrink:0;"><span>12:22</span></div>
+    <div class="pv-topbar">
+      <button class="pv-back" onclick="back()">←</button>
+      <span class="pv-title">Mi perfil</span>
+      <button class="pv-settings" onclick="showToast('⚙️ Configuración — próximamente')">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="2.5" stroke="#555" stroke-width="1.4"/><path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.22 4.22l1.42 1.42M14.36 14.36l1.42 1.42M4.22 15.78l1.42-1.42M14.36 5.64l1.42-1.42" stroke="#555" stroke-width="1.4" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="scroll">
+      <div class="profile-card">
+        <div class="profile-avatar-wrap">
+          <div class="profile-avatar">👩</div>
+          <div class="cam-badge" onclick="showToast('Cambiar foto')">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="7" r="2.2" stroke="white" stroke-width="1.2"/><path d="M4.5 2.5h3l.8 1.2H10a.5.5 0 01.5.5v5a.5.5 0 01-.5.5H2a.5.5 0 01-.5-.5v-5a.5.5 0 01.5-.5h1.7L4.5 2.5z" stroke="white" stroke-width="1.1"/></svg>
+          </div>
+        </div>
+        <div class="profile-info">
+          <div class="profile-name">María González</div>
+          <div class="profile-handle">+598 99 123 456</div>
+          <div class="profile-role">DUEÑO · id: 42</div>
+          <button class="edit-profile-btn" onclick="nav('v-edit-profile')">Editar perfil</button>
+        </div>
+      </div>
+
+      <div class="menu-section">
+        <div class="menu-group">
+          <div class="menu-item" onclick="nav('v-home')">
+            <div class="menu-icon mi-green"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><ellipse cx="5" cy="4.5" rx="2" ry="2.5" stroke="currentColor" stroke-width="1.3"/><ellipse cx="11" cy="4.5" rx="2" ry="2.5" stroke="currentColor" stroke-width="1.3"/><path d="M2 13c0-3 2-5 6-5s6 2 6 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+            <span class="menu-label">Mis mascotas</span>
+            <span class="menu-value">2 activas</span>
+            <span class="menu-arrow">›</span>
+          </div>
+          <div class="menu-item" onclick="nav('v-cal')">
+            <div class="menu-icon mi-blue"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="2.5" width="13" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M5 1v3M11 1v3M1.5 7h13" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="5.5" cy="10.5" r="1" fill="currentColor"/><circle cx="8" cy="10.5" r="1" fill="currentColor"/><circle cx="10.5" cy="10.5" r="1" fill="currentColor"/></svg></div>
+            <span class="menu-label">Mis citas</span>
+            <span class="menu-value">3 activas</span>
+            <span class="menu-arrow">›</span>
+          </div>
+          <div class="menu-item" onclick="nav('v-pet-profile')">
+            <div class="menu-icon mi-orange"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="3" y="1.5" width="10" height="13" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M6 5h4M6 7.5h4M6 10h2.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+            <span class="menu-label">Fichas clínicas</span>
+            <span class="menu-value">3</span>
+            <span class="menu-arrow">›</span>
+          </div>
+        </div>
+
+        <div class="menu-group">
+          <div class="menu-item" onclick="nav('v-clinics')">
+            <div class="menu-icon mi-green"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="4" width="13" height="9" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M1.5 7h13M5 4V3a.5.5 0 01.5-.5h5a.5.5 0 01.5.5v1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+            <span class="menu-label">Suscripciones</span>
+            <span class="menu-value">VetPlus ✓</span>
+            <span class="menu-arrow">›</span>
+          </div>
+          <div class="menu-item" onclick="nav('v-notifs')">
+            <div class="menu-icon mi-blue"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1.5a4 4 0 00-4 4v1.5L2.5 9v.5h11V9L12 7V5.5a4 4 0 00-4-4z" stroke="currentColor" stroke-width="1.3"/><path d="M6.5 10.5a1.5 1.5 0 003 0" stroke="currentColor" stroke-width="1.3"/></svg></div>
+            <span class="menu-label">Notificaciones</span>
+            <span class="menu-value" style="background:#e05555;color:#fff;border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700;">3</span>
+            <span class="menu-arrow">›</span>
+          </div>
+          <div class="menu-item" onclick="showToast('🌐 Idioma — próximamente')">
+            <div class="menu-icon mi-gray"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M8 2c-1.5 2-2 3.8-2 6s.5 4 2 6M8 2c1.5 2 2 3.8 2 6s-.5 4-2 6M2 8h12" stroke="currentColor" stroke-width="1.3"/></svg></div>
+            <span class="menu-label">Idioma</span>
+            <span class="menu-value">Español</span>
+            <span class="menu-arrow">›</span>
+          </div>
+          <div class="menu-item" onclick="showToast('📍 Ubicación — Montevideo, UY')">
+            <div class="menu-icon mi-gray"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1.5C5.5 1.5 3.5 3.5 3.5 6c0 3.5 4.5 8.5 4.5 8.5S12.5 9.5 12.5 6c0-2.5-2-4.5-4.5-4.5z" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="6" r="1.5" stroke="currentColor" stroke-width="1.3"/></svg></div>
+            <span class="menu-label">Ubicación</span>
+            <span class="menu-value">Montevideo</span>
+            <span class="menu-arrow">›</span>
+          </div>
+        </div>
+
+        <div class="menu-group">
+          <div class="menu-item" onclick="showToast('🕓 Historial borrado')">
+            <div class="menu-icon mi-gray"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M8 5v3.5l2 2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+            <span class="menu-label">Limpiar historial</span>
+            <span class="menu-arrow">›</span>
+          </div>
+          <div class="menu-item danger" onclick="doLogout()">
+            <div class="menu-icon mi-red"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h3M10 11l3-3-3-3M13 8H6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <span class="menu-label">Cerrar sesión</span>
+            <span class="menu-arrow">›</span>
+          </div>
+        </div>
+        <div style="text-align:center;padding:6px 0 16px;font-size:10px;color:#ccc;font-family:monospace;">Artemis API v1.4 · DUEÑO · id: 42</div>
+      </div>
+    </div>
+    <div class="bnav">
+      <div class="ni" onclick="nav('v-home')"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 9.5L10 3l7 6.5V17a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" stroke="currentColor" stroke-width="1.5"/><path d="M7 18v-5h6v5" stroke="currentColor" stroke-width="1.5"/></svg><span>Inicio</span></div>
+      <div class="ni" onclick="nav('v-clinics')"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2C7 2 4.5 4.5 4.5 7.5c0 4.5 5.5 10 5.5 10s5.5-5.5 5.5-10C15.5 4.5 13 2 10 2z" stroke="currentColor" stroke-width="1.5"/></svg><span>Clínicas</span></div>
+      <div class="ni" style="align-items:center;" onclick="openModal('m-cita')"><div class="nctr">＋</div><span style="color:#7a9a52;font-size:10px;margin-top:2px;">Cita</span></div>
+      <div class="ni" onclick="nav('v-cal')"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2.5" y="3.5" width="15" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/></svg><span>Calendario</span></div>
+      <div class="ni on"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 17c0-3.3 3.1-6 7-6s7 2.7 7 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><span>Perfil</span></div>
+    </div>
+  </div>
+
+  <!-- EDIT PROFILE -->
+  <div class="view" id="v-edit-profile">
+    <div class="api-bar"><div class="api-dot"></div><div class="api-txt">PUT /usuarios/42 · POST /auth/change-password</div></div>
+    <div class="sbar dk" style="flex-shrink:0;"><span>12:22</span></div>
+    <div class="ep-topbar">
+      <button class="ep-back" onclick="back()">←</button>
+      <span class="ep-title">Editar perfil</span>
+      <button class="ep-save-icon" onclick="saveProfile()">✓</button>
+    </div>
+    <div class="scroll">
+      <div class="ep-avatar-wrap">
+        <div class="ep-avatar" onclick="showToast('Cambiar foto — PUT /usuarios/42')">
+          <span>👩</span>
+          <div class="ep-cam"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="7" r="2.2" stroke="white" stroke-width="1.2"/><path d="M4.5 2.5h3l.8 1.2H10a.5.5 0 01.5.5v5a.5.5 0 01-.5.5H2a.5.5 0 01-.5-.5v-5a.5.5 0 01.5-.5h1.7L4.5 2.5z" stroke="white" stroke-width="1.1"/></svg></div>
+        </div>
+      </div>
+      <div class="ep-form">
+        <div class="api-hint">PUT /api/usuarios/42 · schema: ActualizarUsuario</div>
+        <div class="flbl">Nombre</div>
+        <input class="finput" id="ep-nombre" type="text" value="María">
+        <div class="flbl">Apellido</div>
+        <input class="finput" id="ep-apellido" type="text" value="González">
+        <div class="flbl">Email</div>
+        <input class="finput" id="ep-email" type="email" value="maria.gonzalez@gmail.com">
+        <div class="flbl">Cédula</div>
+        <input class="finput" id="ep-cedula" type="text" value="12345678" placeholder="Número de cédula">
+        <div class="flbl">Teléfono</div>
+        <div class="phone-row">
+          <input class="phone-code" value="+598" readonly>
+          <input class="phone-num" id="ep-tel" type="tel" value="99 123 456">
+        </div>
+        <div class="flbl">Teléfono de emergencia</div>
+        <div class="phone-row">
+          <input class="phone-code" value="+598" readonly>
+          <input class="phone-num" id="ep-emerg" type="tel" value="92 654 321">
+        </div>
+        <div class="flbl">Nueva contraseña</div>
+        <div class="finput-wrap">
+          <input class="finput pw" id="ep-pass" type="password" value="password123" placeholder="Nueva contraseña">
+          <button class="finput-eye" onclick="togglePass()">👁</button>
+        </div>
+        <button class="ep-save-btn" onclick="saveProfile()">Guardar cambios — PUT /usuarios/42</button>
+      </div>
+    </div>
+    <div class="bnav">
+      <div class="ni" onclick="nav('v-home')"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 9.5L10 3l7 6.5V17a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" stroke="currentColor" stroke-width="1.5"/><path d="M7 18v-5h6v5" stroke="currentColor" stroke-width="1.5"/></svg><span>Inicio</span></div>
+      <div class="ni" onclick="nav('v-clinics')"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2C7 2 4.5 4.5 4.5 7.5c0 4.5 5.5 10 5.5 10s5.5-5.5 5.5-10C15.5 4.5 13 2 10 2z" stroke="currentColor" stroke-width="1.5"/></svg><span>Clínicas</span></div>
+      <div class="ni" style="align-items:center;" onclick="openModal('m-cita')"><div class="nctr">＋</div><span style="color:#7a9a52;font-size:10px;margin-top:2px;">Cita</span></div>
+      <div class="ni" onclick="nav('v-cal')"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2.5" y="3.5" width="15" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/></svg><span>Calendario</span></div>
+      <div class="ni on"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 17c0-3.3 3.1-6 7-6s7 2.7 7 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><span>Perfil</span></div>
+    </div>
+  </div>
+
+  <!-- MODAL: Nueva Cita -->
+  <div class="modal" id="m-cita">
+    <div class="msheet">
+      <div class="mhead" style="background:#5b87d8;"><span class="mttl">Nueva cita · POST /api/citas</span><button class="mx" onclick="closeModal('m-cita')">×</button></div>
+      <div class="mbody">
+        <div class="mlbl">Mascota</div>
+        <select class="mselect"><option>🐕 Bella — Golden Retriever (id:1)</option><option>🐩 Daisy — Coton de Tulear (id:2)</option></select>
+        <div class="mlbl">Clínica</div>
+        <select class="mselect"><option>🏥 VetPlus — Av. 18 de Julio (id:1)</option><option>🏥 Clínica PetCare — Pocitos (id:2)</option></select>
+        <div class="mlbl">Tipo (tipoCita)</div>
+        <select class="mselect"><option>CONSULTA</option><option selected>CONTROL</option><option>VACUNACION</option><option>CIRUGIA</option><option>URGENCIA</option></select>
+        <div class="mrow2">
+          <div><div class="mlbl">Fecha propuesta</div><input class="minput" type="date" value="2026-03-24"></div>
+          <div><div class="mlbl">Hora</div><input class="minput" type="time" value="10:00"></div>
+        </div>
+        <div class="mlbl">Descripción</div>
+        <textarea class="minput" rows="3">Control rutina anual + revisión vacunas</textarea>
+        <button class="msave" style="background:#5b87d8;" onclick="submitCita()">Solicitar cita →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Confirmación -->
+  <div class="modal" id="m-ok">
+    <div class="msheet">
+      <div class="mhead" style="background:#7a9a52;"><span class="mttl">✓ Solicitud enviada</span><button class="mx" onclick="closeModal('m-ok')">×</button></div>
+      <div class="mbody" style="text-align:center;padding:24px 18px;">
+        <div style="font-size:44px;margin-bottom:12px;">📋</div>
+        <div style="font-size:15px;font-weight:700;color:#111;margin-bottom:8px;">Cita solicitada</div>
+        <div style="font-size:12px;color:#888;line-height:1.5;margin-bottom:18px;">Tu cita para <strong>Bella</strong> en <strong>VetPlus</strong> fue enviada. Recibirás una notificación cuando sea aprobada.</div>
+        <div style="background:#f0f6e8;border-radius:12px;padding:12px;text-align:left;margin-bottom:16px;font-family:monospace;font-size:11px;">
+          <div style="color:#aaa;margin-bottom:3px;">POST /api/citas → 201 Created</div>
+          <div style="color:#c9883a;">"estado": "PENDIENTE"</div>
+          <div style="color:#555;margin-top:4px;">"idCita": <span id="newCitaId">5</span></div>
+        </div>
+        <button class="msave" style="background:#7a9a52;" onclick="closeModal('m-ok')">Entendido</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<!-- ═══ INFO PANEL ═══ -->
+<div class="info-panel">
+  <div class="ipcard">
+    <div class="iptitle">🗺 Mapa de pantallas</div>
+    <div class="screen-map">
+      <div class="smap-item" onclick="navTo('v-home')"><div class="smap-dot" style="background:#7a9a52;"></div><span class="smap-name">Home</span><span class="smap-api">GET /mascotas/mis-mascotas</span></div>
+      <div class="smap-item" onclick="navTo('v-cal')"><div class="smap-dot" style="background:#5b87d8;"></div><span class="smap-name">Calendario</span><span class="smap-api">GET /citas?fecha_desde=</span></div>
+      <div class="smap-item" onclick="navTo('v-pet-profile')"><div class="smap-dot" style="background:#c9883a;"></div><span class="smap-name">Perfil mascota</span><span class="smap-api">GET /mascotas/1</span></div>
+      <div class="smap-item" onclick="navTo('v-notifs')"><div class="smap-dot" style="background:#e05555;"></div><span class="smap-name">Notificaciones</span><span class="smap-api">GET /notificaciones</span></div>
+      <div class="smap-item" onclick="navTo('v-clinics')"><div class="smap-dot" style="background:#6fa3bf;"></div><span class="smap-name">Clínicas</span><span class="smap-api">GET /clinicas</span></div>
+      <div class="smap-item" onclick="navTo('v-user-profile')"><div class="smap-dot" style="background:#9b7fd4;"></div><span class="smap-name">Mi perfil ★ nuevo</span><span class="smap-api">GET /auth/me</span></div>
+      <div class="smap-item" onclick="navTo('v-edit-profile')"><div class="smap-dot" style="background:#ff8c42;"></div><span class="smap-name">Editar perfil ★ nuevo</span><span class="smap-api">PUT /usuarios/42</span></div>
+    </div>
+  </div>
+  <div class="ipcard">
+    <div class="iptitle">🔌 Endpoints activos</div>
+    <div class="ep2"><span class="epm ep-g">GET</span><div class="epath">/auth/me</div><div class="epdesc">Usuario autenticado + tipo + rol</div></div>
+    <div class="ep2"><span class="epm ep-pu">PUT</span><div class="epath">/usuarios/{id}</div><div class="epdesc">nombre, apellido, email, cédula, teléfono, telefonoEmergencia</div></div>
+    <div class="ep2"><span class="epm ep-po">POST</span><div class="epath">/auth/change-password</div><div class="epdesc">current_password + new_password</div></div>
+    <div class="ep2"><span class="epm ep-g">GET</span><div class="epath">/mascotas/mis-mascotas</div><div class="epdesc">Mascotas + comparación de peso</div></div>
+    <div class="ep2"><span class="epm ep-po">POST</span><div class="epath">/citas</div><div class="epdesc">Crear cita → estado PENDIENTE</div></div>
+    <div class="ep2"><span class="epm ep-g">GET</span><div class="epath">/notificaciones/contador</div><div class="epdesc">Badge de no leídas</div></div>
+    <div class="ep2"><span class="epm ep-po">POST</span><div class="epath">/suscripciones-clinicas</div><div class="epdesc">Suscribirse a clínica</div></div>
+  </div>
+  <div class="ipcard">
+    <div class="iptitle">📦 Schema: ActualizarUsuario</div>
+    <div class="sf"><span class="sfn">nombre</span><span class="sft">string</span></div>
+    <div class="sf"><span class="sfn">apellido</span><span class="sft">string</span></div>
+    <div class="sf"><span class="sfn">email</span><span class="sft">email</span></div>
+    <div class="sf"><span class="sfn">cedula</span><span class="sft">string</span></div>
+    <div class="sf"><span class="sfn">telefono</span><span class="sft">string</span></div>
+    <div class="sf"><span class="sfn">telefonoEmergencia</span><span class="sft">string</span></div>
+    <div class="sf"><span class="sfn">tipoUsuario</span><span class="sft">DUEÑO|VET…</span></div>
+    <div class="sf"><span class="sfn">activo</span><span class="sft">boolean</span></div>
+  </div>
+</div>
+
+<script>
+// ══ DATA ══
+const mascotas=[
+  {idMascota:1,nombre:'Bella',especie:'Perro',raza:'Golden Retriever',sexo:'H',peso:28.4,estado:'ACTIVA',emoji:'🐕',bg:'#d4b896',condiciones_activas_count:0,esta_sana:true,citas_pendientes:2},
+  {idMascota:2,nombre:'Daisy',especie:'Perro',raza:'Coton de Tulear',sexo:'H',peso:5.2,estado:'ACTIVA',emoji:'🐩',bg:'#e8e0d8',condiciones_activas_count:1,esta_sana:false,citas_pendientes:1},
+];
+const citas=[
+  {idCita:1,tipoCita:'VACUNACION',descripcionCita:'Vacuna antirrábica anual',fechaCitaPropuesta:'2026-03-24',horaCitaPropuesta:'09:00',fechaCita:'2026-03-24',horaCita:'09:00',estado:'APROBADA',idMascota:2,mascota:{nombre:'Daisy'},clinica:{nombre:'VetPlus'},vet:'Dr. García'},
+  {idCita:2,tipoCita:'CONTROL',descripcionCita:'Control rutina + vacunas',fechaCitaPropuesta:'2026-03-25',horaCitaPropuesta:'11:00',fechaCita:'2026-03-25',horaCita:'11:00',estado:'APROBADA',idMascota:1,mascota:{nombre:'Bella'},clinica:{nombre:'VetPlus'},vet:'Dr. Green'},
+  {idCita:3,tipoCita:'CONSULTA',descripcionCita:'Revisión dermatológica',fechaCitaPropuesta:'2026-04-05',horaCitaPropuesta:'15:00',fechaCita:null,horaCita:null,estado:'PENDIENTE',idMascota:1,mascota:{nombre:'Bella'},clinica:{nombre:'PetCare'},vet:'—'},
+  {idCita:4,tipoCita:'CONSULTA',descripcionCita:'Control peso y alimentación',fechaCitaPropuesta:'2026-02-10',horaCitaPropuesta:'10:00',fechaCita:'2026-02-10',horaCita:'10:00',estado:'COMPLETADA',idMascota:1,mascota:{nombre:'Bella'},clinica:{nombre:'VetPlus'},vet:'Dr. Green'},
+];
+const notifs=[
+  {id:1,tipo_notificacion:'CITA',titulo:'Cita aprobada ✓',mensaje:'Tu cita de control para Bella fue aprobada para el 25 Mar a las 11:00 en VetPlus',fecha:'Hace 5 min',leida:false},
+  {id:2,tipo_notificacion:'CITA',titulo:'Recordatorio de cita',mensaje:'Mañana tienes cita de vacunación para Daisy a las 09:00 en VetPlus — Dr. García',fecha:'Hace 1 hora',leida:false},
+  {id:3,tipo_notificacion:'SISTEMA',titulo:'Antipulgas próxima a vencer',mensaje:'El tratamiento antipulgas de Bella vence en 6 días.',fecha:'Hace 3 horas',leida:false},
+  {id:4,tipo_notificacion:'SUSCRIPCION',titulo:'Suscripción activa',mensaje:'Tu suscripción a Clínica VetPlus fue aprobada.',fecha:'Ayer',leida:true},
+  {id:5,tipo_notificacion:'AUTORIZACION',titulo:'Ficha clínica disponible',mensaje:'La ficha de Bella del 10 Feb está disponible para descargar.',fecha:'Ayer',leida:true},
+];
+const fichasData=[
+  {idFicha:1,fechaConsulta:'2026-02-10',motivoConsulta:'Control rutinario y revisión de peso',diagnosticoDefinitivo:'Animal sano, peso dentro del rango ideal',estadoCaso:'CERRADO',costoConsulta:850},
+  {idFicha:2,fechaConsulta:'2025-11-15',motivoConsulta:'Dermatitis leve en zona dorsal',diagnosticoDefinitivo:'Dermatitis alérgica estacional',estadoCaso:'CERRADO',costoConsulta:1200},
+  {idFicha:3,fechaConsulta:'2025-08-03',motivoConsulta:'Vacunación anual completa',diagnosticoDefinitivo:'Animal sano, vacunas aplicadas correctamente',estadoCaso:'CERRADO',costoConsulta:650},
+];
+const clinicasData=[
+  {id_clinica:1,nombre:'VetPlus Montevideo',direccion:'Av. 18 de Julio 1234',plan_publicidad:'PREMIUM',rating:4.8,suscrito:true,emoji:'🏥'},
+  {id_clinica:2,nombre:'Clínica PetCare',direccion:'Av. Brasil 2890, Pocitos',plan_publicidad:'BASICO',rating:4.5,suscrito:false,emoji:'🐾'},
+  {id_clinica:3,nombre:'VetSalud Prado',direccion:'Av. Millán 4321',plan_publicidad:'BASICO',rating:4.2,suscrito:false,emoji:'💊'},
+];
+const evData={
+  '2026-03-17':[{nombre:'Paseo matutino — Bella',hora:'08:00–09:00',estado:'COMPLETADA',tipo:'CONTROL'},{nombre:'Antipulgas próxima',hora:'Recordatorio',estado:'PENDIENTE',tipo:'SISTEMA'}],
+  '2026-03-24':[{nombre:'Vacunación — Daisy',hora:'09:00–10:00',estado:'APROBADA',tipo:'VACUNACION',vet:'Dr. García · VetPlus'}],
+  '2026-03-25':[{nombre:'Control rutina — Bella',hora:'11:00–12:00',estado:'APROBADA',tipo:'CONTROL',vet:'Dr. Green · VetPlus'}],
+  '2026-04-05':[{nombre:'Consulta dermatológica — Bella',hora:'15:00',estado:'PENDIENTE',tipo:'CONSULTA'}],
+};
+
+// NAV
+let navHist=[];
+function nav(id){
+  const cur=document.querySelector('.view.active');
+  if(!cur||cur.id===id)return;
+  navHist.push(cur.id);
+  cur.classList.remove('active');cur.classList.add('prev');
+  setTimeout(()=>cur.classList.remove('prev'),350);
+  document.getElementById(id).classList.add('active');
+  if(id==='v-cal'){selKey=todayKey();renderCal();renderEvs(selKey);}
+  if(id==='v-notifs')renderNotifs();
+  if(id==='v-clinics')renderClinics();
+}
+function navTo(id){nav(id);}
+function back(){const p=navHist.pop()||'v-home';const cur=document.querySelector('.view.active');if(cur){cur.classList.remove('active');}document.getElementById(p).classList.add('active');}
+
+// RENDER HOME
+function renderHome(){
+  document.getElementById('petsRow').innerHTML=mascotas.map(m=>`
+    <div class="pcard" onclick="nav('v-pet-profile')">
+      <div style="position:relative;display:inline-block;">
+        <div class="pimg" style="background:${m.bg}">${m.emoji}</div>
+        ${m.citas_pendientes?`<div class="pbadge">${m.citas_pendientes}</div>`:''}
+      </div>
+      <div class="pname">${m.nombre}</div>
+      <div class="pbreed">${m.raza} · ${m.peso}kg · ${m.esta_sana?'<span style="color:#4a8a28;font-size:10px;">✓</span>':'<span style="color:#e05555;font-size:10px;">⚠</span>'}</div>
+    </div>`).join('');
+
+  const proximas=citas.filter(c=>c.estado!=='COMPLETADA').slice(0,2);
+  const cols=['abl','aor'];
+  document.getElementById('apptsRow').innerHTML=proximas.map((c,i)=>`
+    <div class="acard ${cols[i%2]}" onclick="nav('v-cal')">
+      <div class="atitle">${lTipo(c.tipoCita)}</div>
+      <div class="adate">${fDate(c.fechaCita||c.fechaCitaPropuesta)} ${c.horaCita||c.horaCitaPropuesta}</div>
+      <div class="afoot"><span style="font-size:11px">🐾</span><span class="aperson">${c.mascota.nombre} · ${c.vet}</span></div>
+      <span class="astatus">${c.estado}</span>
+    </div>`).join('');
+
+  document.getElementById('profileCitas').innerHTML=citas.filter(c=>c.idMascota===1&&c.estado!=='COMPLETADA').slice(0,2).map(c=>`
+    <div class="appt-item ${c.estado==='PENDIENTE'?'ai-or':'ai-bl'}">
+      <div class="ait">${lTipo(c.tipoCita)}</div>
+      <div class="aid">${fDate(c.fechaCita||c.fechaCitaPropuesta)} · ${c.horaCita||c.horaCitaPropuesta}</div>
+      <div class="aid">${c.mascota.nombre} · ${c.vet} · ${c.clinica.nombre}</div>
+      <span class="aistatus">${c.estado}</span>
+    </div>`).join('');
+
+  document.getElementById('histList').innerHTML=citas.filter(c=>c.idMascota===1&&c.estado==='COMPLETADA').map(c=>`
+    <div class="appt-item ai-gr" style="margin-bottom:10px;">
+      <div class="ait">${lTipo(c.tipoCita)}</div>
+      <div class="aid">${fDate(c.fechaCita)} · ${c.horaCita}</div>
+      <div class="aid">${c.clinica.nombre} · ${c.vet}</div>
+      <span class="aistatus">COMPLETADA ✓</span>
+    </div>`).join('');
+
+  document.getElementById('fichasList').innerHTML=fichasData.map(f=>`
+    <div class="ficha-item">
+      <div class="fi-date">${fDate(f.fechaConsulta)}${f.costoConsulta?' · $'+f.costoConsulta+' UYU':''}</div>
+      <div class="fi-title">${f.motivoConsulta}</div>
+      <div class="fi-detail">${f.diagnosticoDefinitivo}</div>
+      <span class="fi-tag ${f.estadoCaso==='CERRADO'?'ft-closed':'ft-open'}">${f.estadoCaso}</span>
+    </div>`).join('');
+}
+
+// NOTIFS
+function renderNotifs(){
+  const icoMap={CITA:'ni-c',SISTEMA:'ni-s',AUTORIZACION:'ni-a',SUSCRIPCION:'ni-su'};
+  const emMap={CITA:'📅',SISTEMA:'🔔',AUTORIZACION:'✅',SUSCRIPCION:'🏥'};
+  document.getElementById('notifList').innerHTML=notifs.map(n=>`
+    <div class="nitem ${n.leida?'':'unread'}" onclick="markRead(${n.id})">
+      <div class="niico ${icoMap[n.tipo_notificacion]}">${emMap[n.tipo_notificacion]}</div>
+      <div class="nibody"><div class="nititle">${n.titulo}</div><div class="nimsg">${n.mensaje}</div><div class="nitime">${n.fecha}</div></div>
+      ${!n.leida?'<div class="nidot"></div>':''}
+    </div>`).join('');
+}
+function markRead(id){const n=notifs.find(x=>x.id===id);if(n)n.leida=true;updBadge();renderNotifs();}
+function markAllRead(){notifs.forEach(n=>n.leida=true);updBadge();renderNotifs();}
+function updBadge(){
+  const c=notifs.filter(n=>!n.leida).length;
+  ['nb2','nb3'].forEach(id=>{const el=document.getElementById(id);if(el){el.textContent=c||'';el.style.display=c?'flex':'none';}});
+}
+
+// CLINICS
+function renderClinics(){
+  document.getElementById('clinicList').innerHTML=clinicasData.map(c=>`
+    <div class="citem">
+      <div class="clogo">${c.emoji}</div>
+      <div class="cinfo">
+        <div class="cname">${c.nombre}</div>
+        <div class="caddr">📍 ${c.direccion}</div>
+        <div class="crating">${'★'.repeat(Math.round(c.rating))} <span>${c.rating}</span></div>
+        <div class="ctags">
+          <span class="ctag ${c.plan_publicidad==='PREMIUM'?'ct-p':'ct-a'}">${c.plan_publicidad}</span>
+          ${c.suscrito?'<span class="ctag ct-s">Suscrito ✓</span>':`<span class="ctag ct-n" onclick="suscribir(${c.id_clinica})">+ Suscribirse</span>`}
+        </div>
+      </div>
+    </div>`).join('');
+}
+function suscribir(id){
+  const c=clinicasData.find(x=>x.id_clinica===id);
+  if(c){c.suscrito=true;renderClinics();showToast(`✓ Suscripto a ${c.nombre}`);}
+}
+
+// CALENDAR
+let cy=2026,cm=2,selKey=null;
+const MN=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const SM=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+function p(n){return n<10?'0'+n:''+n;}
+function todayKey(){const t=new Date();return `${t.getFullYear()}-${p(t.getMonth()+1)}-${p(t.getDate())}`;}
+function renderCal(){
+  document.getElementById('monLbl').textContent=MN[cm]+' '+cy;
+  const g=document.getElementById('cgrid');g.innerHTML='';
+  const first=(new Date(cy,cm,1).getDay()+6)%7;
+  const dim=new Date(cy,cm+1,0).getDate();
+  const prev=new Date(cy,cm,0).getDate();
+  const td=new Date();
+  for(let i=0;i<first;i++) g.innerHTML+=`<div class="cc oth">${prev-first+1+i}</div>`;
+  for(let d=1;d<=dim;d++){
+    const k=`${cy}-${p(cm+1)}-${p(d)}`;
+    const hev=evData[k]?'hev':'';
+    const isTd=(d===td.getDate()&&cm===td.getMonth()&&cy===td.getFullYear())?'tod':'';
+    const isSel=selKey===k?'sel':'';
+    g.innerHTML+=`<div class="cc ${hev} ${isTd} ${isSel}" onclick="selDay('${k}')">${d}</div>`;
+  }
+  const rem=(first+dim)%7===0?0:7-(first+dim)%7;
+  for(let d=1;d<=rem;d++) g.innerHTML+=`<div class="cc oth">${d}</div>`;
+}
+function renderEvs(k){
+  const tdk=todayKey();
+  const pts=(k||tdk).split('-');
+  document.getElementById('dayTtl').textContent=k===tdk?'Hoy':`${parseInt(pts[2])} ${SM[parseInt(pts[1])-1]}`;
+  const evs=evData[k]||[];
+  const el=document.getElementById('evList');
+  if(!evs.length){el.innerHTML='<div style="font-size:13px;color:#bbb;padding:8px 0">Sin eventos — toca + para agregar</div>';return;}
+  el.innerHTML=evs.map(e=>{
+    const done=e.estado==='COMPLETADA',prog=e.estado==='APROBADA';
+    const dot=done?`<div class="edot d-done"><span style="color:#fff;font-size:11px;font-weight:700">✓</span></div>`:prog?`<div class="edot d-prog"><div style="width:8px;height:8px;border-radius:50%;background:#7a9a52"></div></div>`:`<div class="edot d-pend"><div style="width:8px;height:8px;border-radius:50%;background:#ddd"></div></div>`;
+    const bcls=done?'b-done':prog?'b-prog':'b-pend';
+    const blbl=done?'Completada':prog?'Aprobada':'Pendiente';
+    return `<div class="evrow">${dot}<div class="ebody"><div class="ename">${e.nombre}</div><div class="etime">${e.hora}${e.vet?' · '+e.vet:''}</div><span class="ebadge ${bcls}">${lTipo(e.tipo)} — ${blbl}</span></div></div>`;
+  }).join('');
+}
+function selDay(k){selKey=k;renderCal();renderEvs(k);}
+function chMon(d){cm+=d;if(cm>11){cm=0;cy++;}if(cm<0){cm=11;cy--;}selKey=null;renderCal();renderEvs(null);}
+
+// TABS
+function switchTab(i){
+  for(let j=0;j<4;j++){
+    document.getElementById('tab'+j).style.display=j===i?'block':'none';
+    document.querySelectorAll('.ptab')[j].classList.toggle('on',j===i);
+  }
+}
+
+// MODAL
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function submitCita(){
+  closeModal('m-cita');
+  document.getElementById('newCitaId').textContent=citas.length+1;
+  citas.unshift({idCita:citas.length+1,tipoCita:'CONTROL',descripcionCita:'Control rutina',fechaCitaPropuesta:'2026-03-24',horaCitaPropuesta:'10:00',fechaCita:null,horaCita:null,estado:'PENDIENTE',idMascota:1,mascota:{nombre:'Bella'},clinica:{nombre:'VetPlus'},vet:'Por asignar'});
+  renderHome();setTimeout(()=>openModal('m-ok'),200);
+}
+
+// PROFILE
+function togglePass(){const i=document.getElementById('ep-pass');i.type=i.type==='password'?'text':'password';}
+function saveProfile(){showToast('✓ Perfil guardado — PUT /usuarios/42');setTimeout(()=>back(),800);}
+function doLogout(){showToast('Sesión cerrada — POST /auth/logout');setTimeout(()=>nav('v-home'),1400);}
+
+// TOAST
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+// HELPERS
+function lTipo(t){return{CONSULTA:'Consulta',CONTROL:'Control',VACUNACION:'Vacunación',CIRUGIA:'Cirugía',URGENCIA:'Urgencia',SISTEMA:'Sistema'}[t]||t;}
+function fDate(d){if(!d)return '—';const[y,m,day]=d.split('-');return `${parseInt(day)} ${SM[parseInt(m)-1]} ${y}`;}
+
+// INIT
+const tk=todayKey();selKey=tk;
+renderHome();renderCal();renderEvs(tk);renderNotifs();renderClinics();updBadge();
+</script>
+</body>
+</html>
