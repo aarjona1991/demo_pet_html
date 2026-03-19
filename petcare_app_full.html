@@ -222,41 +222,103 @@ body{font-family:-apple-system,'SF Pro Display',sans-serif;background:#b5bda8;mi
 .nitime{font-size:10px;color:#bbb;margin-top:3px;}
 .nidot{width:8px;height:8px;border-radius:50%;background:#7a9a52;flex-shrink:0;margin-top:5px;}
 
-/* ─── CLINICS ─── */
-.cvhead{padding:12px 15px 10px;display:flex;align-items:center;gap:11px;border-bottom:1px solid #f0f0f0;flex-shrink:0;}
-.cvttl{font-size:17px;font-weight:700;color:#111;flex:1;}
-.citem{display:flex;gap:11px;padding:12px 15px;border-bottom:1px solid #f5f5f5;cursor:pointer;transition:background .15s;}
-.citem:hover{background:#fafafa;}
-.clogo{width:44px;height:44px;border-radius:13px;background:#e8f0fd;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
-.cinfo{flex:1;}
-.cname{font-size:14px;font-weight:700;color:#111;}
-.caddr{font-size:11px;color:#888;margin-top:2px;}
-.ctags{display:flex;gap:5px;margin-top:5px;flex-wrap:wrap;}
+/* ─── CLINICS MAP VIEW ─── */
+/* Map canvas */
+.map-view{position:relative;background:#e8eef8;flex:1;overflow:hidden;min-height:0;}
+.map-canvas{position:absolute;inset:0;}
+/* Search bar floating */
+.map-search{position:absolute;top:14px;left:14px;right:14px;z-index:10;display:flex;align-items:center;gap:8px;}
+.map-srch-box{flex:1;background:#fff;border-radius:14px;padding:10px 14px;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.1);font-size:13px;color:#aaa;}
+.map-filter-btn{width:40px;height:40px;background:#fff;border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.1);cursor:pointer;flex-shrink:0;border:none;position:relative;transition:background .2s;}
+.map-filter-btn.active{background:#7a9a52;}
+.map-filter-btn.active svg path,.map-filter-btn.active svg line{stroke:#fff;}
+.map-filter-badge{position:absolute;top:-4px;right:-4px;width:16px;height:16px;background:#ff8c42;border-radius:50%;border:2px solid #fff;font-size:9px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;}
+/* Filter dropdown panel */
+.filter-panel{position:absolute;top:76px;right:14px;background:#fff;border-radius:18px;box-shadow:0 8px 28px rgba(0,0,0,.15);padding:14px;z-index:20;width:230px;display:none;}
+.filter-panel.open{display:block;animation:fpSlide .2s ease;}
+@keyframes fpSlide{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
+.fp-title{font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;}
+.fp-chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px;}
+.fp-divider{height:1px;background:#f0f0f0;margin:10px 0;}
+.fp-apply{width:100%;background:#7a9a52;color:#fff;border:none;border-radius:11px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;}
+.fp-clear{width:100%;background:none;border:none;color:#aaa;font-size:12px;cursor:pointer;margin-top:6px;padding:4px;}
+/* Map pins */
+.map-pin{position:absolute;display:flex;flex-direction:column;align-items:center;cursor:pointer;transition:transform .2s;}
+.map-pin:hover{transform:scale(1.1);}
+.map-pin.selected{transform:scale(1.2);z-index:5;}
+.pin-bubble{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.15);font-size:20px;border:3px solid #fff;transition:all .2s;}
+.pin-tail{width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:8px solid #fff;margin-top:-2px;filter:drop-shadow(0 2px 2px rgba(0,0,0,.1));}
+.pin-suscrito{background:#7a9a52;}
+.pin-premium{background:#5b87d8;}
+.pin-normal{background:#fff;}
+.pin-user{position:absolute;width:18px;height:18px;border-radius:50%;background:#5b87d8;border:3px solid #fff;box-shadow:0 2px 8px rgba(91,135,216,.5);}
+.pin-user::after{content:'';position:absolute;inset:-6px;border-radius:50%;background:rgba(91,135,216,.2);animation:userPulse 2s infinite;}
+/* ── FILTERS ── */
+.filters-row{display:flex;gap:7px;padding:0 14px 10px;overflow-x:auto;flex-shrink:0;}
+.filters-row::-webkit-scrollbar{height:0;}
+.fchip{display:flex;align-items:center;gap:5px;padding:7px 13px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;border:1.5px solid #e0e8f0;background:#fff;color:#555;transition:all .18s;flex-shrink:0;}
+.fchip.on{background:#7a9a52;color:#fff;border-color:#7a9a52;}
+.fchip.on-blue{background:#5b87d8;color:#fff;border-color:#5b87d8;}
+.fchip.on-orange{background:#ff8c42;color:#fff;border-color:#ff8c42;}
+.fchip svg{flex-shrink:0;}
+@keyframes userPulse{0%,100%{transform:scale(1);opacity:1;}50%{transform:scale(1.5);opacity:0;}}
+/* Bottom sheet */
+.map-sheet{position:absolute;bottom:0;left:0;right:0;background:#fff;border-radius:22px 22px 0 0;box-shadow:0 -4px 24px rgba(0,0,0,.1);transition:transform .35s cubic-bezier(.4,0,.2,1);z-index:10;}
+.map-sheet.collapsed{transform:translateY(calc(100% - 130px));}
+.map-sheet.expanded{transform:translateY(0);max-height:75%;overflow-y:auto;}
+.sheet-handle{display:flex;justify-content:center;padding:10px 0 4px;cursor:pointer;}
+.sheet-handle div{width:36px;height:4px;background:#e0e0e0;border-radius:2px;}
+/* Sheet header — suscribed banner */
+.sub-banner{margin:0 14px 10px;background:linear-gradient(135deg,#7a9a52,#5b8a3c);border-radius:16px;padding:12px 14px;display:flex;align-items:center;gap:10px;}
+.sub-banner-ico{width:36px;height:36px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.sub-banner-info{flex:1;}
+.sub-banner-ttl{font-size:12px;font-weight:700;color:#fff;}
+.sub-banner-sub{font-size:10px;color:rgba(255,255,255,.8);margin-top:1px;}
+.sub-banner-badge{background:rgba(255,255,255,.25);color:#fff;font-size:10px;font-weight:700;padding:3px 9px;border-radius:10px;flex-shrink:0;}
+/* Clinic cards horizontal scroll */
+.sheet-sec-ttl{font-size:12px;font-weight:700;color:#888;padding:0 14px 8px;text-transform:uppercase;letter-spacing:.4px;}
+.clinic-cards{display:flex;gap:10px;padding:0 14px 14px;overflow-x:auto;}
+.clinic-cards::-webkit-scrollbar{height:0;}
+.clinic-card{flex-shrink:0;width:200px;background:#f7f9fc;border-radius:16px;overflow:hidden;cursor:pointer;transition:transform .15s,box-shadow .15s;border:1.5px solid transparent;}
+.clinic-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.1);}
+.clinic-card.suscrito{border-color:#7a9a52;}
+.clinic-card.selected{border-color:#5b87d8;box-shadow:0 4px 16px rgba(91,135,216,.2);}
+.cc-top{height:80px;display:flex;align-items:center;justify-content:center;font-size:32px;position:relative;}
+.cc-sub-badge{position:absolute;top:8px;right:8px;background:#7a9a52;color:#fff;font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px;}
+.cc-body{padding:10px 12px;}
+.cc-name{font-size:13px;font-weight:700;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cc-addr{font-size:10px;color:#888;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cc-row{display:flex;align-items:center;justify-content:space-between;margin-top:7px;}
+.cc-rating{font-size:11px;color:#f5c542;}
+.cc-plan{font-size:9px;font-weight:700;padding:2px 6px;border-radius:7px;}
+.cc-plan-p{background:#fdf0e0;color:#c9883a;}
+.cc-plan-b{background:#f0f0f0;color:#666;}
+/* Detail panel (bottom sheet expanded) */
+.detail-panel{padding:0 14px;}
+.dp-top{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px;}
+.dp-img{width:70px;height:70px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:30px;flex-shrink:0;}
+.dp-info{flex:1;}
+.dp-name{font-size:16px;font-weight:700;color:#111;}
+.dp-addr{font-size:11px;color:#888;margin-top:2px;}
+.dp-stars{font-size:12px;color:#f5c542;margin-top:4px;}
+.dp-sub-row{display:flex;gap:8px;margin-top:8px;align-items:center;}
+.dp-sub-btn{flex:1;background:#7a9a52;color:#fff;border:none;border-radius:12px;padding:10px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;}
+.dp-sub-btn.unsub{background:#fde8e8;color:#e05555;}
+.dp-cita-btn{flex:1;background:#5b87d8;color:#fff;border:none;border-radius:12px;padding:10px;font-size:12px;font-weight:700;cursor:pointer;}
+.dp-stats{display:flex;gap:8px;margin-bottom:12px;}
+.dp-stat{flex:1;background:#f7f9fc;border-radius:10px;padding:8px;text-align:center;}
+.dp-stat-v{font-size:16px;font-weight:700;color:#111;}
+.dp-stat-l{font-size:9px;color:#888;margin-top:1px;}
+.dp-vets{margin-bottom:12px;}
+.dp-vet{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid #f0f0f0;}
+.dp-vet:last-child{border:none;}
+.dp-vet-av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#5b87d8,#7a9a52);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.dp-vet-nm{font-size:12px;font-weight:600;color:#111;}
+.dp-vet-sp{font-size:10px;color:#888;}
+.stars{color:#f5c542;font-size:11px;}
+/* Tags */
 .ctag{font-size:10px;font-weight:600;padding:2px 8px;border-radius:8px;}
 .ct-p{background:#fdf0e0;color:#c9883a;}.ct-a{background:#e8f5e0;color:#4a8a28;}.ct-s{background:#e8f0fd;color:#5b87d8;}.ct-n{background:#f5f5f5;color:#888;cursor:pointer;}
-.crating{font-size:11px;color:#888;margin-top:3px;}
-/* clinic detail */
-.cl-hero{height:160px;background:linear-gradient(135deg,#7a9a52,#5b87d8);display:flex;align-items:flex-end;padding:14px;position:relative;flex-shrink:0;}
-.cl-back{position:absolute;top:12px;left:14px;color:#fff;font-size:22px;cursor:pointer;background:none;border:none;}
-.cl-name{font-size:20px;font-weight:700;color:#fff;}
-.cl-sub{font-size:12px;color:rgba(255,255,255,.85);}
-.cl-sub-btn{background:#ff8c42;color:#fff;border:none;border-radius:20px;padding:7px 16px;font-size:12px;font-weight:700;cursor:pointer;margin-top:10px 16px 0;display:block;width:calc(100% - 32px);margin:10px 16px 0;text-align:center;}
-.cl-section{padding:12px 15px 4px;}
-.cl-sec-ttl{font-size:13px;font-weight:700;color:#111;margin-bottom:8px;}
-.cl-stat{display:flex;gap:8px;margin-bottom:12px;}
-.cl-stat-item{flex:1;background:#f7f9fc;border-radius:12px;padding:10px;text-align:center;}
-.cl-stat-val{font-size:18px;font-weight:700;color:#111;}
-.cl-stat-lbl{font-size:10px;color:#888;margin-top:2px;}
-.cl-vet-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f5f5f5;}
-.cl-vet-av{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#5b87d8,#7a9a52);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
-.cl-vet-info{flex:1;}
-.cl-vet-name{font-size:13px;font-weight:600;color:#111;}
-.cl-vet-spec{font-size:11px;color:#888;}
-.stars{color:#f5c542;font-size:12px;}
-.cl-svc-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
-.cl-svc-item{background:#f7f9fc;border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:8px;}
-.cl-svc-ico{font-size:18px;}
-.cl-svc-txt{font-size:12px;font-weight:600;color:#333;}
 
 /* ─── USER PROFILE ─── */
 .pvtop{display:flex;align-items:center;justify-content:space-between;padding:10px 17px 5px;flex-shrink:0;}
@@ -689,57 +751,126 @@ body{font-family:-apple-system,'SF Pro Display',sans-serif;background:#b5bda8;mi
   </div>
 </div>
 
-<!-- ═══ CLINICS LIST ═══ -->
-<div class="view" id="v-clinics">
-  <div class="api-bar"><div class="api-dot"></div><div class="api-txt">GET /clinicas · GET /suscripciones-clinicas · POST /suscripciones-clinicas</div></div>
-  <div class="sb dk" style="flex-shrink:0;"><span>12:22</span></div>
-  <div class="cvhead"><button onclick="back()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#555;">←</button><div class="cvttl">Clínicas veterinarias</div></div>
-  <div class="scr" id="clinicList"></div>
-  <div class="bnav">
+<!-- ═══ CLINICS MAP ═══ -->
+<div class="view" id="v-clinics" style="background:#e8eef8;">
+  <div class="api-bar"><div class="api-dot"></div><div class="api-txt">GET /clinicas · GET /suscripciones-clinicas · ubicacion.lat/lng</div></div>
+  <div class="sb wh" style="background:transparent;position:absolute;top:0;left:0;right:0;z-index:11;padding-top:8px;"><span style="color:#333;font-weight:700;">12:22</span></div>
+
+  <!-- MAP CANVAS -->
+  <div class="map-view" id="mapCanvas">
+    <canvas id="mapSvgCanvas" style="position:absolute;inset:0;width:100%;height:100%;"></canvas>
+    <!-- SVG map background -->
+    <svg style="position:absolute;inset:0;width:100%;height:100%;" viewBox="0 0 320 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- background -->
+      <rect width="320" height="400" fill="#dce8f5"/>
+      <!-- blocks -->
+      <rect x="20" y="30" width="80" height="55" rx="4" fill="#c8d8ee"/>
+      <rect x="20" y="95" width="55" height="45" rx="4" fill="#c8d8ee"/>
+      <rect x="85" y="95" width="55" height="30" rx="4" fill="#c8d8ee"/>
+      <rect x="150" y="20" width="60" height="40" rx="4" fill="#c8d8ee"/>
+      <rect x="220" y="20" width="80" height="35" rx="4" fill="#c8d8ee"/>
+      <rect x="220" y="65" width="55" height="50" rx="4" fill="#c8d8ee"/>
+      <rect x="155" y="75" width="55" height="55" rx="4" fill="#c8d8ee"/>
+      <rect x="20" y="155" width="70" height="60" rx="4" fill="#c8d8ee"/>
+      <rect x="100" y="140" width="60" height="45" rx="4" fill="#c8d8ee"/>
+      <rect x="170" y="140" width="55" height="60" rx="4" fill="#c8d8ee"/>
+      <rect x="235" y="130" width="65" height="75" rx="4" fill="#c8d8ee"/>
+      <rect x="20" y="230" width="90" height="50" rx="4" fill="#c8d8ee"/>
+      <rect x="120" y="220" width="70" height="60" rx="4" fill="#c8d8ee"/>
+      <rect x="200" y="220" width="100" height="55" rx="4" fill="#c8d8ee"/>
+      <rect x="20" y="295" width="60" height="50" rx="4" fill="#c8d8ee"/>
+      <rect x="90" y="295" width="80" height="50" rx="4" fill="#c8d8ee"/>
+      <rect x="180" y="290" width="65" height="55" rx="4" fill="#c8d8ee"/>
+      <rect x="255" y="290" width="45" height="55" rx="4" fill="#c8d8ee"/>
+      <!-- roads -->
+      <path d="M0 125 H320" stroke="#fff" stroke-width="10"/>
+      <path d="M0 195 H320" stroke="#fff" stroke-width="8"/>
+      <path d="M0 270 H320" stroke="#fff" stroke-width="10"/>
+      <path d="M140 0 V400" stroke="#fff" stroke-width="10"/>
+      <path d="M215 0 V400" stroke="#fff" stroke-width="8"/>
+      <path d="M70 0 V400" stroke="#fff" stroke-width="7"/>
+      <path d="M0 60 H320" stroke="#fff" stroke-width="6"/>
+      <!-- park -->
+      <rect x="100" y="140" width="60" height="45" rx="4" fill="#c5e0b0"/>
+      <!-- road labels -->
+      <text x="160" y="122" font-size="7" fill="#a0b4cc" text-anchor="middle" font-family="sans-serif">Av. 18 de Julio</text>
+      <text x="160" y="192" font-size="7" fill="#a0b4cc" text-anchor="middle" font-family="sans-serif">Av. Brasil</text>
+      <text x="136" y="80" font-size="6" fill="#a0b4cc" text-anchor="middle" transform="rotate(-90 136 80)" font-family="sans-serif">Millán</text>
+    </svg>
+    <!-- Search bar -->
+    <div class="map-search" style="top:32px;">
+      <div class="map-srch-box">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="6" cy="6" r="4.5" stroke="#aaa" stroke-width="1.4"/><path d="M10 10l2.5 2.5" stroke="#aaa" stroke-width="1.4" stroke-linecap="round"/></svg>
+        Buscar clínica...
+      </div>
+      <button class="map-filter-btn" id="filterBtn" onclick="toggleFilterPanel()">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M4 8h8M6 12h4" stroke="#555" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <div class="map-filter-badge" id="filterBadge" style="display:none;">0</div>
+      </button>
+      <!-- Filter dropdown panel -->
+      <div class="filter-panel" id="filterPanel">
+        <div class="fp-title">Filtrar clínicas</div>
+        <div class="fp-chips">
+          <div class="fchip" id="fp-suscrito" onclick="toggleFP('suscrito')">
+            <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M2.5 7L5.5 10L11.5 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Suscritas
+          </div>
+          <div class="fchip" id="fp-premium" onclick="toggleFP('premium')">
+            <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1.5l1.5 3.2 3.5.5-2.5 2.4.6 3.4L7 9.5l-3.1 1.5.6-3.4L2 5.2l3.5-.5L7 1.5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+            Premium
+          </div>
+          <div class="fchip" id="fp-urgencias" onclick="toggleFP('urgencias')">
+            <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 2C4.8 2 3 3.8 3 6c0 3 4 7 4 7s4-4 4-7c0-2.2-1.8-4-4-4z" stroke="currentColor" stroke-width="1.4"/><path d="M7 4v2.5l1.5 1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            Urgencias 24h
+          </div>
+          <div class="fchip" id="fp-cerca" onclick="toggleFP('cerca')">
+            <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.4"/><circle cx="7" cy="7" r="2" stroke="currentColor" stroke-width="1.4"/><path d="M7 1.5v2M7 10.5v2M1.5 7h2M10.5 7h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            Cerca de mí
+          </div>
+          <div class="fchip" id="fp-rating" onclick="toggleFP('rating')">
+            <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1.5l1.5 3.2 3.5.5-2.5 2.4.6 3.4L7 9.5l-3.1 1.5.6-3.4L2 5.2l3.5-.5L7 1.5z" fill="currentColor" stroke="currentColor" stroke-width=".5" stroke-linejoin="round"/></svg>
+            Top rated ≥4.5
+          </div>
+        </div>
+        <div class="fp-divider"></div>
+        <button class="fp-apply" onclick="applyFilters()">Aplicar filtros</button>
+        <button class="fp-clear" onclick="clearFilters()">Limpiar filtros</button>
+      </div>
+    </div>
+    <!-- User location pin -->
+    <div class="pin-user" style="left:130px;top:185px;"></div>
+    <!-- Clinic pins rendered by JS -->
+    <div id="mapPins"></div>
+  </div>
+
+  <!-- BOTTOM SHEET -->
+  <div class="map-sheet collapsed" id="mapSheet">
+    <div class="sheet-handle" onclick="toggleSheet()"><div></div></div>
+    <!-- Subscribed banner -->
+    <div class="sub-banner" id="subBanner">
+      <div class="sub-banner-ico">🏥</div>
+      <div class="sub-banner-info">
+        <div class="sub-banner-ttl">VetPlus Montevideo</div>
+        <div class="sub-banner-sub">Tu clínica suscrita · Av. 18 de Julio 1234</div>
+      </div>
+      <div class="sub-banner-badge">✓ Activa</div>
+    </div>
+    <!-- Cards list -->
+    <div id="sheetContent">
+      <!-- Active filter pills (shown when filters applied) -->
+      <div class="filters-row" id="activePillsRow" style="display:none;"></div>
+      <div class="sheet-sec-ttl" id="sheetSecTtl">Clínicas disponibles — GET /clinicas</div>
+      <div class="clinic-cards" id="clinicCards"></div>
+    </div>
+    <!-- Detail panel (hidden until pin tap) -->
+    <div id="clinicDetailPanel" style="display:none;padding-bottom:12px;">
+      <div class="detail-panel" id="detailPanelContent"></div>
+    </div>
+  </div>
+
+  <div class="bnav" style="position:relative;z-index:12;background:#fff;">
     <div class="ni" onclick="nav('v-home')"><svg width="21" height="21" viewBox="0 0 22 22" fill="none"><path d="M2 10.5L11 3l9 7.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 9v9a1 1 0 001 1h12a1 1 0 001-1V9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><span>Inicio</span></div>
     <div class="ni on"><svg width="21" height="21" viewBox="0 0 22 22" fill="none"><path d="M11 2C8 2 5.5 4.5 5.5 7.5c0 4.5 5.5 9.5 5.5 9.5s5.5-5 5.5-9.5C16.5 4.5 14 2 11 2z" stroke="currentColor" stroke-width="1.6"/><path d="M11 5.5v4M9 7.5h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><span>Clínicas</span></div>
-    <div class="ni" style="align-items:center;" onclick="openModal('m-cita')"><div class="nctr"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M11 5v12M5 11h12" stroke="white" stroke-width="2.2" stroke-linecap="round"/></svg></div><span style="color:#7a9a52;font-size:10px;margin-top:2px;">Cita</span></div>
-    <div class="ni" onclick="nav('v-cal')"><svg width="21" height="21" viewBox="0 0 22 22" fill="none"><rect x="2.5" y="4" width="17" height="15" rx="2.5" stroke="currentColor" stroke-width="1.6"/></svg><span>Calendario</span></div>
-    <div class="ni" onclick="nav('v-user-profile')"><svg width="21" height="21" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="8" r="3.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 19c0-3.9 3.6-7 8-7s8 3.1 8 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><span>Perfil</span></div>
-  </div>
-</div>
-
-<!-- ═══ CLINIC DETAIL ═══ -->
-<div class="view" id="v-clinic-detail">
-  <div class="api-bar"><div class="api-dot"></div><div class="api-txt">GET /clinicas/1 · GET /veterinarios?id_clinica=1 · POST /suscripciones-clinicas</div></div>
-  <div class="sb wh" style="background:linear-gradient(135deg,#7a9a52,#5b87d8);flex-shrink:0;"><span>12:22</span></div>
-  <div class="cl-hero"><button class="cl-back" onclick="back()">←</button><div style="font-size:42px;position:absolute;top:50%;left:50%;transform:translate(-50%,-58%);">🏥</div><div><div class="cl-name">VetPlus Montevideo</div><div class="cl-sub">Av. 18 de Julio 1234 · Montevideo</div></div></div>
-  <button class="cl-sub-btn" onclick="showToast('✓ Ya suscrito — GET /suscripciones-clinicas')">✓ Suscrito a esta clínica</button>
-  <div class="scr">
-    <div class="cl-section">
-      <div class="cl-stat">
-        <div class="cl-stat-item"><div class="cl-stat-val" style="color:#f5c542;">4.8</div><div class="cl-stat-lbl">Rating</div></div>
-        <div class="cl-stat-item"><div class="cl-stat-val">3</div><div class="cl-stat-lbl">Veterinarios</div></div>
-        <div class="cl-stat-item"><div class="cl-stat-val" style="color:#7a9a52;">24h</div><div class="cl-stat-lbl">Urgencias</div></div>
-        <div class="cl-stat-item"><div class="cl-stat-val">148</div><div class="cl-stat-lbl">Pacientes</div></div>
-      </div>
-    </div>
-    <div class="cl-section">
-      <div class="cl-sec-ttl">Servicios — servicios_ofrecidos</div>
-      <div class="cl-svc-grid">
-        <div class="cl-svc-item"><div class="cl-svc-ico">🩺</div><div class="cl-svc-txt">Consultas</div></div>
-        <div class="cl-svc-item"><div class="cl-svc-ico">💉</div><div class="cl-svc-txt">Vacunas</div></div>
-        <div class="cl-svc-item"><div class="cl-svc-ico">🔬</div><div class="cl-svc-txt">Laboratorio</div></div>
-        <div class="cl-svc-item"><div class="cl-svc-ico">🏨</div><div class="cl-svc-txt">Internación</div></div>
-        <div class="cl-svc-item"><div class="cl-svc-ico">⚕️</div><div class="cl-svc-txt">Cirugías</div></div>
-        <div class="cl-svc-item"><div class="cl-svc-ico">🚨</div><div class="cl-svc-txt">Urgencias 24h</div></div>
-      </div>
-    </div>
-    <div class="cl-section" style="padding-bottom:16px;">
-      <div class="cl-sec-ttl">Veterinarios — GET /veterinarios?id_clinica=1</div>
-      <div class="cl-vet-item"><div class="cl-vet-av">👨‍⚕️</div><div class="cl-vet-info"><div class="cl-vet-name">Dr. Carlos Green</div><div class="cl-vet-spec">Medicina general · Cirugía</div><div class="stars">★★★★★ <span style="font-size:11px;color:#888;">4.9</span></div></div></div>
-      <div class="cl-vet-item"><div class="cl-vet-av">👩‍⚕️</div><div class="cl-vet-info"><div class="cl-vet-name">Dra. Ana García</div><div class="cl-vet-spec">Vacunología · Dermatología</div><div class="stars">★★★★★ <span style="font-size:11px;color:#888;">4.8</span></div></div></div>
-      <div class="cl-vet-item"><div class="cl-vet-av">👨‍⚕️</div><div class="cl-vet-info"><div class="cl-vet-name">Dr. Luis Pérez</div><div class="cl-vet-spec">Ortopedia · Neurología</div><div class="stars">★★★★☆ <span style="font-size:11px;color:#888;">4.6</span></div></div></div>
-    </div>
-  </div>
-  <div class="bnav">
-    <div class="ni" onclick="nav('v-home')"><svg width="21" height="21" viewBox="0 0 22 22" fill="none"><path d="M2 10.5L11 3l9 7.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 9v9a1 1 0 001 1h12a1 1 0 001-1V9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><span>Inicio</span></div>
-    <div class="ni on"><svg width="21" height="21" viewBox="0 0 22 22" fill="none"><path d="M11 2C8 2 5.5 4.5 5.5 7.5c0 4.5 5.5 9.5 5.5 9.5s5.5-5 5.5-9.5C16.5 4.5 14 2 11 2z" stroke="currentColor" stroke-width="1.6"/></svg><span>Clínicas</span></div>
     <div class="ni" style="align-items:center;" onclick="openModal('m-cita')"><div class="nctr"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M11 5v12M5 11h12" stroke="white" stroke-width="2.2" stroke-linecap="round"/></svg></div><span style="color:#7a9a52;font-size:10px;margin-top:2px;">Cita</span></div>
     <div class="ni" onclick="nav('v-cal')"><svg width="21" height="21" viewBox="0 0 22 22" fill="none"><rect x="2.5" y="4" width="17" height="15" rx="2.5" stroke="currentColor" stroke-width="1.6"/></svg><span>Calendario</span></div>
     <div class="ni" onclick="nav('v-user-profile')"><svg width="21" height="21" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="8" r="3.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 19c0-3.9 3.6-7 8-7s8 3.1 8 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><span>Perfil</span></div>
@@ -870,7 +1001,7 @@ body{font-family:-apple-system,'SF Pro Display',sans-serif;background:#b5bda8;mi
     <div class="smap-item" onclick="navTo('v-ficha-detail')"><div class="smap-dot" style="background:#9b7fd4;"></div><span class="smap-name">Ficha clínica ★</span><span class="smap-api">GET /fichas/1</span></div>
     <div class="smap-item" onclick="navTo('v-notifs')"><div class="smap-dot" style="background:#e05555;"></div><span class="smap-name">Notificaciones</span><span class="smap-api">GET /notificaciones</span></div>
     <div class="smap-item" onclick="navTo('v-clinics')"><div class="smap-dot" style="background:#6fa3bf;"></div><span class="smap-name">Clínicas</span><span class="smap-api">GET /clinicas</span></div>
-    <div class="smap-item" onclick="navTo('v-clinic-detail')"><div class="smap-dot" style="background:#3a8fc4;"></div><span class="smap-name">Detalle clínica ★</span><span class="smap-api">GET /clinicas/1</span></div>
+    <div class="smap-item" onclick="navTo('v-clinics')"><div class="smap-dot" style="background:#3a8fc4;"></div><span class="smap-name">Detalle clínica (en mapa)</span><span class="smap-api">GET /clinicas/1</span></div>
     <div class="smap-item" onclick="navTo('v-user-profile')"><div class="smap-dot" style="background:#7a6248;"></div><span class="smap-name">Mi perfil</span><span class="smap-api">GET /auth/me</span></div>
     <div class="smap-item" onclick="navTo('v-edit-profile')"><div class="smap-dot" style="background:#ff8c42;"></div><span class="smap-name">Editar perfil</span><span class="smap-api">PUT /usuarios/42</span></div>
   </div>
@@ -921,9 +1052,9 @@ const notifs=[
   {id:5,tipo:'AUTORIZACION',titulo:'Ficha clínica disponible',msg:'La ficha de Bella del 10 Feb está disponible para descargar.',when:'Ayer',leida:true},
 ];
 const clinicasData=[
-  {id:1,nombre:'VetPlus Montevideo',dir:'Av. 18 de Julio 1234',plan:'PREMIUM',rating:4.8,suscrito:true,emoji:'🏥'},
-  {id:2,nombre:'Clínica PetCare',dir:'Av. Brasil 2890, Pocitos',plan:'BASICO',rating:4.5,suscrito:false,emoji:'🐾'},
-  {id:3,nombre:'VetSalud Prado',dir:'Av. Millán 4321',plan:'BASICO',rating:4.2,suscrito:false,emoji:'💊'},
+  {id:1,nombre:'VetPlus Montevideo',dir:'Av. 18 de Julio 1234',plan:'PREMIUM',rating:4.8,suscrito:true,emoji:'🏥',urgencias:true,distancia:0.8},
+  {id:2,nombre:'Clínica PetCare',dir:'Av. Brasil 2890, Pocitos',plan:'BASICO',rating:4.5,suscrito:false,emoji:'🐾',urgencias:false,distancia:2.1},
+  {id:3,nombre:'VetSalud Prado',dir:'Av. Millán 4321',plan:'BASICO',rating:4.2,suscrito:false,emoji:'💊',urgencias:true,distancia:1.4},
 ];
 const evData={
   '2026-03-17':[{nom:'Paseo matutino — Bella',hr:'08:00–09:00',st:'COMPLETADA',tipo:'CONTROL'},{nom:'Antipulgas próxima',hr:'Recordatorio',st:'PENDIENTE',tipo:'SISTEMA'}],
@@ -943,7 +1074,7 @@ function nav(id){
   document.getElementById(id).classList.add('active');
   if(id==='v-cal'){selKey=todayKey();renderCal();renderEvs(selKey);}
   if(id==='v-notifs')renderNotifs();
-  if(id==='v-clinics')renderClinics();
+  if(id==='v-clinics'){renderClinics();setTimeout(()=>{const s=document.getElementById('mapSheet');if(s){s.classList.remove('collapsed');s.classList.add('expanded');sheetExpanded=true;}},300);}
 }
 function navTo(id){nav(id);}
 function back(){
@@ -1021,26 +1152,197 @@ function updBadge(){
   ['nb2','nb3'].forEach(id=>{const el=document.getElementById(id);if(el){el.textContent=c||'';el.style.display=c?'flex':'none';}});
 }
 
-// ══ CLINICS ══
+// ══ CLINICS MAP ══
+// active filters set
+const activeFilters=new Set();
+
+function toggleFilterPanel(){
+  const panel=document.getElementById('filterPanel');
+  const btn=document.getElementById('filterBtn');
+  const isOpen=panel.classList.contains('open');
+  panel.classList.toggle('open',!isOpen);
+  btn.classList.toggle('active',!isOpen);
+}
+
+function toggleFP(key){
+  if(activeFilters.has(key)) activeFilters.delete(key);
+  else activeFilters.add(key);
+  // update chip visual inside panel
+  const el=document.getElementById('fp-'+key);
+  if(!el)return;
+  el.classList.remove('on','on-blue','on-orange');
+  if(activeFilters.has(key)){
+    const colorMap={suscrito:'on',premium:'on-blue',urgencias:'on-orange',cerca:'on-blue',rating:'on-orange'};
+    el.classList.add(colorMap[key]||'on');
+  }
+}
+
+function applyFilters(){
+  // close panel
+  document.getElementById('filterPanel').classList.remove('open');
+  document.getElementById('filterBtn').classList.toggle('active', activeFilters.size>0);
+  // update badge
+  const badge=document.getElementById('filterBadge');
+  if(activeFilters.size>0){badge.textContent=activeFilters.size;badge.style.display='flex';}
+  else badge.style.display='none';
+  // show active pills
+  const pillsRow=document.getElementById('activePillsRow');
+  const pillLabels={suscrito:'✓ Suscritas',premium:'★ Premium',urgencias:'⚡ 24h',cerca:'📍 Cerca',rating:'⭐ Top rated'};
+  const pillColors={suscrito:'#7a9a52',premium:'#5b87d8',urgencias:'#ff8c42',cerca:'#5b87d8',rating:'#ff8c42'};
+  if(activeFilters.size>0){
+    pillsRow.style.display='flex';
+    pillsRow.innerHTML=Array.from(activeFilters).map(function(k){
+      return '<div class="fchip on" style="background:'+pillColors[k]+';border-color:'+pillColors[k]+';font-size:11px;padding:5px 11px;" onclick="removePill(&#39;'+k+'&#39;)">'+pillLabels[k]+' \u00d7</div>';
+    }).join('');
+  } else {
+    pillsRow.style.display='none';
+    pillsRow.innerHTML='';
+  }
+  // update section title
+  const ttl=document.getElementById('sheetSecTtl');
+  if(ttl) ttl.textContent=activeFilters.size>0?'Resultados filtrados — '+activeFilters.size+' filtro(s)':'Clínicas disponibles — GET /clinicas';
+  renderClinics();
+}
+
+function removePill(key){
+  activeFilters.delete(key);
+  const el=document.getElementById('fp-'+key);
+  if(el) el.classList.remove('on','on-blue','on-orange');
+  applyFilters();
+}
+
+function clearFilters(){
+  activeFilters.clear();
+  ['suscrito','premium','urgencias','cerca','rating'].forEach(function(k){
+    const el=document.getElementById('fp-'+k);
+    if(el) el.classList.remove('on','on-blue','on-orange');
+  });
+  applyFilters();
+}
+
+function filteredClinics(){
+  return clinicasData.filter(function(c){
+    if(activeFilters.size===0) return true;
+    if(activeFilters.has('suscrito')&&!c.suscrito) return false;
+    if(activeFilters.has('premium')&&c.plan!=='PREMIUM') return false;
+    if(activeFilters.has('urgencias')&&!c.urgencias) return false;
+    if(activeFilters.has('cerca')&&c.distancia>=2) return false;
+    if(activeFilters.has('rating')&&c.rating<4.5) return false;
+    return true;
+  });
+}
+
+const clinicPins=[
+  {id:1,top:'108px',left:'48px'},
+  {id:2,top:'156px',left:'176px'},
+  {id:3,top:'226px',left:'98px'},
+];
+let selectedClinic=null;
+let sheetExpanded=false;
+
+function pinColor(c){return c.suscrito?'#7a9a52':c.plan==='PREMIUM'?'#5b87d8':'#ddd';}
+function tailColor(c){return c.suscrito?'#7a9a52':c.plan==='PREMIUM'?'#5b87d8':'#eee';}
+function pinClass(c){return c.suscrito?'pin-suscrito':c.plan==='PREMIUM'?'pin-premium':'pin-normal';}
+function checkSvg(){return '<svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1.5 4L3.5 6L6.5 2" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';}
+
 function renderClinics(){
-  document.getElementById('clinicList').innerHTML=clinicasData.map(c=>`
-    <div class="citem" onclick="nav('v-clinic-detail')">
-      <div class="clogo">${c.emoji}</div>
-      <div class="cinfo">
-        <div class="cname">${c.nombre}</div>
-        <div class="caddr">📍 ${c.dir}</div>
-        <div class="crating">${'★'.repeat(Math.round(c.rating))} ${c.rating}</div>
-        <div class="ctags">
-          <span class="ctag ${c.plan==='PREMIUM'?'ct-p':'ct-a'}">${c.plan}</span>
-          ${c.suscrito?'<span class="ctag ct-s">Suscrito ✓</span>':`<span class="ctag ct-n" onclick="event.stopPropagation();suscribir(${c.id})">+ Suscribirse</span>`}
-        </div>
-      </div>
-    </div>`).join('');
+  // Pins
+  const pinsHtml=clinicasData.map(function(c,i){
+    const pin=clinicPins[i]||{top:'150px',left:'150px'};
+    const selCls=selectedClinic===c.id?' selected':'';
+    const checkBadge=c.suscrito?'<div style="position:absolute;top:-6px;right:-6px;width:14px;height:14px;background:#7a9a52;border-radius:50%;border:2px solid #fff;display:flex;align-items:center;justify-content:center;">'+checkSvg()+'</div>':'';
+    return '<div class="map-pin'+selCls+'" style="position:absolute;top:'+pin.top+';left:'+pin.left+';" onclick="selectClinicPin('+c.id+')">'
+      +'<div class="pin-bubble '+pinClass(c)+'" style="border-color:'+pinColor(c)+'">'+c.emoji+'</div>'
+      +'<div class="pin-tail" style="border-top-color:'+tailColor(c)+'"></div>'
+      +checkBadge+'</div>';
+  }).join('');
+  document.getElementById('mapPins').innerHTML=pinsHtml;
+
+  // Cards
+  const visibleClinics=filteredClinics();
+  if(visibleClinics.length===0){document.getElementById('clinicCards').innerHTML='<div style="padding:14px;font-size:13px;color:#aaa;">Ning&#250;n resultado para este filtro</div>';} else {
+  const cardsHtml=visibleClinics.map(function(c){
+    const selCls=selectedClinic===c.id?' selected':'';
+    const subBadge=c.suscrito?'<div class="cc-sub-badge">&#10003; Suscrito</div>':'';
+    const subTag=c.suscrito?'<span class="ctag ct-s">Suscrito &#10003;</span>':'<span class="ctag ct-n" onclick="event.stopPropagation();suscribir('+c.id+')">+ Suscribirse</span>';
+    const bgTop=c.suscrito?'linear-gradient(135deg,#e8f5e0,#c8e0b0)':c.plan==='PREMIUM'?'linear-gradient(135deg,#e8f0fd,#c8d8f4)':'#f0f0f0';
+    const stars='&#9733;'.repeat(Math.round(c.rating));
+    return '<div class="clinic-card'+(c.suscrito?' suscrito':'')+selCls+'" onclick="selectClinicPin('+c.id+')">'
+      +'<div class="cc-top" style="background:'+bgTop+'"><span style="font-size:28px;">'+c.emoji+'</span>'+subBadge+'</div>'
+      +'<div class="cc-body"><div class="cc-name">'+c.nombre+'</div><div class="cc-addr">&#128205; '+c.dir+'</div>'
+      +'<div class="cc-row"><span style="color:#f5c542;font-size:11px;">'+stars+' <span style="color:#888;">'+c.rating+'</span></span>'
+      +'<span class="cc-plan '+(c.plan==='PREMIUM'?'cc-plan-p':'cc-plan-b')+'">'+c.plan+'</span></div></div></div>';
+  }).join('');
+  document.getElementById('clinicCards').innerHTML=cardsHtml;}
 }
+
+function selectClinicPin(id){
+  selectedClinic=id;
+  const c=clinicasData.find(function(x){return x.id===id;});
+  if(!c)return;
+  const sheet=document.getElementById('mapSheet');
+  sheet.classList.remove('collapsed');
+  sheet.classList.add('expanded');
+  sheetExpanded=true;
+  document.getElementById('sheetContent').style.display='none';
+  document.getElementById('clinicDetailPanel').style.display='block';
+  const vets=[
+    {em:'&#128104;&#8205;&#9877;&#65039;',nm:'Dr. Carlos Green',sp:'Medicina &middot; Cirug&iacute;a',r:'&#9733;&#9733;&#9733;&#9733;&#9733;',rv:'4.9'},
+    {em:'&#128105;&#8205;&#9877;&#65039;',nm:'Dra. Ana Garc&iacute;a',sp:'Vacunas &middot; Dermato',r:'&#9733;&#9733;&#9733;&#9733;&#9733;',rv:'4.8'},
+    {em:'&#128104;&#8205;&#9877;&#65039;',nm:'Dr. Luis P&eacute;rez',sp:'Ortopedia &middot; Neuro',r:'&#9733;&#9733;&#9733;&#9733;&#9734;',rv:'4.6'},
+  ];
+  const subBtn=c.suscrito
+    ?'<button class="dp-sub-btn unsub" onclick="suscribir('+c.id+')">&#10007; Darse de baja</button>'
+    :'<button class="dp-sub-btn" onclick="suscribir('+c.id+')">&plus; Suscribirse</button>';
+  const subNote=c.suscrito?'<div style="margin-top:5px;font-size:11px;font-weight:700;color:#7a9a52;">&#10003; Est&aacute;s suscrito a esta cl&iacute;nica</div>':'';
+  const bgImg=c.suscrito?'linear-gradient(135deg,#e8f5e0,#c8e0b0)':c.plan==='PREMIUM'?'linear-gradient(135deg,#e8f0fd,#c8d8f4)':'#f0f0f0';
+  const stars='&#9733;'.repeat(Math.round(c.rating));
+  const vetsHtml=vets.map(function(v){
+    return '<div class="dp-vet"><div class="dp-vet-av">'+v.em+'</div><div><div class="dp-vet-nm">'+v.nm+'</div><div class="dp-vet-sp">'+v.sp+'</div><div class="stars">'+v.r+' <span style="color:#888;font-size:10px;">'+v.rv+'</span></div></div></div>';
+  }).join('');
+  document.getElementById('detailPanelContent').innerHTML=
+    '<div class="dp-top">'
+      +'<div class="dp-img" style="background:'+bgImg+'">'+c.emoji+'</div>'
+      +'<div class="dp-info"><div class="dp-name">'+c.nombre+'</div><div class="dp-addr">&#128205; '+c.dir+'</div>'
+      +'<div class="dp-stars">'+stars+' <span style="color:#888;font-size:11px;">'+c.rating+'</span></div>'+subNote+'</div></div>'
+    +'<div class="dp-stats">'
+      +'<div class="dp-stat"><div class="dp-stat-v" style="color:#f5c542;">'+c.rating+'</div><div class="dp-stat-l">Rating</div></div>'
+      +'<div class="dp-stat"><div class="dp-stat-v">3</div><div class="dp-stat-l">Veterinarios</div></div>'
+      +'<div class="dp-stat"><div class="dp-stat-v" style="color:#7a9a52;">24h</div><div class="dp-stat-l">Urgencias</div></div>'
+    +'</div>'
+    +'<div class="dp-sub-row">'+subBtn+'<button class="dp-cita-btn" onclick="openCitaModal()">&#128197; Pedir cita</button></div>'
+    +'<div style="height:10px;"></div>'
+    +'<div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;">Veterinarios</div>'
+    +'<div class="dp-vets">'+vetsHtml+'</div>';
+  renderClinics();
+}
+
+function toggleSheet(){
+  const sheet=document.getElementById('mapSheet');
+  if(sheetExpanded){
+    sheet.classList.remove('expanded');
+    sheet.classList.add('collapsed');
+    sheetExpanded=false;
+    selectedClinic=null;
+    document.getElementById('sheetContent').style.display='block';
+    document.getElementById('clinicDetailPanel').style.display='none';
+    renderClinics();
+  } else {
+    sheet.classList.remove('collapsed');
+    sheet.classList.add('expanded');
+    sheetExpanded=true;
+  }
+}
+
 function suscribir(id){
-  const c=clinicasData.find(x=>x.id===id);
-  if(c){c.suscrito=true;renderClinics();showToast(`✓ Suscripto a ${c.nombre}`);}
+  const c=clinicasData.find(function(x){return x.id===id;});
+  if(!c)return;
+  c.suscrito=!c.suscrito;
+  showToast(c.suscrito?'&#10003; Suscripto a '+c.nombre:c.nombre+' — baja realizada');
+  if(selectedClinic===id)selectClinicPin(id);
+  else renderClinics();
 }
+
 
 // ══ CALENDAR ══
 let cy=2026,cm=2,selKey=null;
@@ -1092,6 +1394,7 @@ function switchTab(i){
 
 // ══ MODAL ══
 function openModal(id){document.getElementById(id).classList.add('open');}
+function openCitaModal(){openModal('m-cita');}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 function submitCita(){
   closeModal('m-cita');
@@ -1144,6 +1447,15 @@ function fDate(d){if(!d)return '—';const[y,m,day]=d.split('-');return `${parse
 const tk=todayKey();selKey=tk;
 renderHome();renderCal();renderEvs(tk);renderNotifs();renderClinics();updBadge();
 initSplash();
+// Close filter panel on outside click
+document.addEventListener('click', function(e){
+  const panel=document.getElementById('filterPanel');
+  const btn=document.getElementById('filterBtn');
+  if(panel&&btn&&!panel.contains(e.target)&&!btn.contains(e.target)){
+    panel.classList.remove('open');
+    if(activeFilters.size===0) btn.classList.remove('active');
+  }
+});
 </script>
 </body>
 </html>
