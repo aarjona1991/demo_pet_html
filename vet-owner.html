@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>VetCare — Veterinario Dueño</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f1623;--sidebar:#151e2d;--card:#1a2535;--card2:#1f2d40;--border:#243246;
+  --accent:#00c896;--accent-soft:rgba(0,200,150,0.12);--accent-soft2:rgba(0,200,150,0.06);
+  --text:#e8edf5;--muted:#7a8fa6;--dim:#3d5166;
+  --pink:#f06292;--pink-soft:rgba(240,98,146,0.12);
+  --blue:#4fc3f7;--blue-soft:rgba(79,195,247,0.12);
+  --amber:#ffb74d;--amber-soft:rgba(255,183,77,0.12);
+  --purple:#b39ddb;--purple-soft:rgba(179,157,219,0.12);
+  --green:#66bb6a;--green-soft:rgba(102,187,106,0.12);
+  --red:#ef5350;--red-soft:rgba(239,83,80,0.12);
+}
+body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden}
+.app{display:flex;height:100vh}
+.sidebar{width:230px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.sidebar-logo{padding:22px 18px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.logo-icon{width:34px;height:34px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.logo-text{font-size:15px;font-weight:600;color:var(--text)}
+.logo-sub{font-size:10px;color:var(--muted);margin-top:1px}
+.role-badge{margin:10px 14px;background:var(--amber-soft);border:1px solid rgba(255,183,77,0.3);border-radius:8px;padding:7px 12px;display:flex;align-items:center;gap:8px}
+.role-badge-icon{font-size:14px}
+.role-badge-text{font-size:11px;font-weight:500;color:var(--amber)}
+.role-badge-sub{font-size:10px;color:var(--muted);margin-top:1px}
+.sidebar-nav{padding:6px 10px;flex:1}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;cursor:pointer;transition:all 0.15s;font-size:13px;color:var(--muted);user-select:none}
+.nav-item:hover{background:var(--accent-soft2);color:var(--text)}
+.nav-item.active{background:var(--accent-soft);color:var(--accent)}
+.nav-item .nav-icon{width:18px;height:18px;flex-shrink:0;opacity:0.7}
+.nav-item.active .nav-icon{opacity:1}
+.nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:600;padding:1px 6px;border-radius:20px}
+.nav-group-label{font-size:10px;color:var(--dim);font-weight:500;letter-spacing:0.08em;padding:12px 12px 4px;text-transform:uppercase}
+.sidebar-footer{padding:14px;border-top:1px solid var(--border)}
+.user-row{display:flex;align-items:center;gap:10px}
+.user-avatar{width:32px;height:32px;border-radius:50%;background:var(--amber);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#0f1623;flex-shrink:0}
+.user-name{font-size:12px;font-weight:500}
+.user-role{font-size:10px;color:var(--amber)}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{height:56px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:16px;flex-shrink:0;background:var(--sidebar)}
+.topbar-title{font-size:16px;font-weight:600;flex:1}
+.clinic-pill{display:flex;align-items:center;gap:6px;background:var(--amber-soft);border:1px solid rgba(255,183,77,0.25);border-radius:8px;padding:5px 12px;font-size:12px;color:var(--amber)}
+.search-wrap{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:7px 12px;width:200px}
+.search-wrap input{background:none;border:none;outline:none;font-size:13px;color:var(--text);width:100%;font-family:inherit}
+.search-wrap input::placeholder{color:var(--dim)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:9px;font-size:12px;font-weight:500;cursor:pointer;border:none;font-family:inherit;transition:all 0.15s}
+.btn-primary{background:var(--accent);color:#0f1623}
+.btn-primary:hover{background:#00e0a8}
+.btn-outline{background:var(--card);color:var(--text);border:1px solid var(--border)}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+.btn-amber{background:var(--amber-soft);color:var(--amber);border:1px solid rgba(255,183,77,0.25)}
+.btn-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:var(--card);border:1px solid var(--border);cursor:pointer;transition:all 0.15s;position:relative}
+.notif-dot{position:absolute;top:6px;right:6px;width:6px;height:6px;background:var(--red);border-radius:50%}
+.content{flex:1;overflow-y:auto;padding:24px}
+.screen{display:none}.screen.active{display:block}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px}
+.stat-label{font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:500}
+.stat-value{font-size:26px;font-weight:600;line-height:1}
+.stat-sub{font-size:11px;color:var(--muted);margin-top:6px}
+.stat-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:12px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-size:11px;font-weight:500;color:var(--muted);text-align:left;padding:10px 16px;border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:0.04em}
+td{padding:12px 16px;border-bottom:1px solid var(--border);color:var(--text)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--accent-soft2)}
+.avatar-cell{display:flex;align-items:center;gap:10px}
+.av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:500}
+.badge-green{background:var(--green-soft);color:var(--green)}
+.badge-amber{background:var(--amber-soft);color:var(--amber)}
+.badge-red{background:var(--red-soft);color:var(--red)}
+.badge-blue{background:var(--blue-soft);color:var(--blue)}
+.badge-purple{background:var(--purple-soft);color:var(--purple)}
+.badge-pink{background:var(--pink-soft);color:var(--pink)}
+.badge-muted{background:var(--card2);color:var(--muted)}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.section-title{font-size:14px;font-weight:600}
+.section-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.prog-bg{height:5px;background:var(--border);border-radius:10px;margin-top:8px}
+.prog-fill{height:100%;border-radius:10px}
+.tabs{display:flex;gap:4px;background:var(--card2);border-radius:10px;padding:4px;margin-bottom:18px}
+.tab{flex:1;text-align:center;padding:7px;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;color:var(--muted);transition:all 0.15s}
+.tab.active{background:var(--card);color:var(--accent)}
+.pet-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;cursor:pointer;transition:all 0.15s}
+.pet-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.timeline{position:relative;padding-left:24px}
+.timeline::before{content:'';position:absolute;left:6px;top:0;bottom:0;width:1px;background:var(--border)}
+.timeline-item{position:relative;margin-bottom:20px}
+.timeline-dot{position:absolute;left:-21px;top:4px;width:10px;height:10px;border-radius:50%;background:var(--accent);border:2px solid var(--bg)}
+.timeline-date{font-size:10px;color:var(--muted);margin-bottom:4px}
+.timeline-title{font-size:13px;font-weight:500;margin-bottom:2px}
+.timeline-sub{font-size:12px;color:var(--muted)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+.cal-day-label{font-size:10px;color:var(--muted);padding:4px 0;font-weight:500}
+.cal-day{padding:6px 2px;border-radius:7px;font-size:12px;cursor:pointer;transition:all 0.1s;position:relative}
+.cal-day:hover{background:var(--card2)}
+.cal-day.today{background:var(--accent);color:#0f1623;font-weight:600}
+.cal-day.has-event::after{content:'';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--pink)}
+.cal-day.other-month{color:var(--dim)}
+.form-group{margin-bottom:16px}
+.form-label{font-size:12px;color:var(--muted);margin-bottom:6px;display:block;font-weight:500}
+.form-input{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:9px;padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit;outline:none;transition:border 0.15s}
+.form-input:focus{border-color:var(--accent)}
+.form-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237a8fa6' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center}
+.qr-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;text-align:center}
+.qr-box{width:140px;height:140px;background:white;border-radius:12px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:70px;padding:8px}
+.qr-id{font-family:'DM Mono',monospace;font-size:13px;color:var(--accent);background:var(--accent-soft);padding:6px 14px;border-radius:8px;display:inline-block;margin-bottom:8px}
+.notif-item{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.notif-item:last-child{border-bottom:none}
+.notif-dot2{width:8px;height:8px;border-radius:50%;background:var(--accent);margin-top:5px;flex-shrink:0}
+.notif-dot2.read{background:var(--dim)}
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:80px}
+.bar{flex:1;border-radius:4px 4px 0 0;cursor:pointer}
+.bar:hover{filter:brightness(1.2)}
+.bar-label{font-size:9px;color:var(--muted);text-align:center;margin-top:4px}
+/* Clinic scope banner */
+.scope-banner{background:var(--amber-soft);border:1px solid rgba(255,183,77,0.25);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:10px;margin-bottom:18px;font-size:12px;color:var(--amber)}
+.scope-banner svg{width:16px;height:16px;flex-shrink:0}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🐾</div>
+    <div><div class="logo-text">VetCare</div><div class="logo-sub">Sistema de Gestión</div></div>
+  </div>
+  <div class="role-badge">
+    <span class="role-badge-icon">🏥</span>
+    <div><div class="role-badge-text">Veterinario Dueño</div><div class="role-badge-sub">Clínica Norte</div></div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-item active" onclick="navigate('dashboard',this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </div>
+    <div class="nav-item" onclick="navigate('mascotas',this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      Mascotas
+    </div>
+    <div class="nav-item" onclick="navigate('citas',this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Citas
+    </div>
+    <div class="nav-item" onclick="navigate('fichas',this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      Fichas Clínicas
+    </div>
+    <div class="nav-item" onclick="navigate('qr',this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="5" height="5"/><rect x="16" y="3" width="5" height="5"/><rect x="3" y="16" width="5" height="5"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><line x1="21" y1="21" x2="21" y2="21"/><path d="M3 10h4"/><path d="M10 3v4"/></svg>
+      Acceso QR
+    </div>
+    <div class="nav-group-label">Mi Clínica</div>
+    <div class="nav-item" onclick="navigate('mi-clinica',this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Mi Clínica
+    </div>
+    <div class="nav-item" onclick="navigate('veterinarios',this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Veterinarios
+    </div>
+    <div class="nav-item" onclick="navigate('usuarios',this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Usuarios
+    </div>
+    <div class="nav-item" onclick="navigate('reportes',this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Reportes
+    </div>
+    <div class="nav-item" onclick="navigate('notificaciones',this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      Notificaciones
+      <span class="nav-badge">3</span>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-row">
+      <div class="user-avatar">DL</div>
+      <div><div class="user-name">Dra. Ana López</div><div class="user-role">Vet. Dueña · Clínica Norte</div></div>
+    </div>
+  </div>
+</aside>
+
+<div class="main">
+  <header class="topbar">
+    <span class="topbar-title" id="topbar-title">Dashboard</span>
+    <div class="clinic-pill">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+      Clínica Norte
+    </div>
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;color:var(--dim)"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" placeholder="Buscar..."/>
+    </div>
+    <div class="btn-icon" onclick="navigate('notificaciones',document.querySelector('[onclick*=notificaciones]'))">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <span class="notif-dot"></span>
+    </div>
+    <div class="user-avatar" style="width:32px;height:32px;font-size:12px;cursor:pointer">DL</div>
+  </header>
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div class="screen active" id="screen-dashboard">
+      <div class="scope-banner">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        Mostrando datos de <strong style="margin:0 4px">Clínica Norte</strong> — Av. del Libertador 1234, Montevideo
+      </div>
+      <div class="grid-4">
+        <div class="stat-card"><div class="stat-icon" style="background:var(--accent-soft)">🐾</div><div class="stat-label">Mascotas en mi clínica</div><div class="stat-value" style="color:var(--accent)">342</div><div class="stat-sub" style="color:var(--green)">+5% vs mes anterior</div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:var(--blue-soft)">📅</div><div class="stat-label">Citas hoy</div><div class="stat-value" style="color:var(--blue)">12</div><div class="stat-sub">4 pendientes · 8 completadas</div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:var(--amber-soft)">👨‍⚕️</div><div class="stat-label">Vets en mi clínica</div><div class="stat-value" style="color:var(--amber)">8</div><div class="stat-sub">6 activos hoy</div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:var(--pink-soft)">⭐</div><div class="stat-label">Satisfacción</div><div class="stat-value" style="color:var(--pink)">4.9</div><div class="stat-sub">Promedio del mes</div></div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="section-header"><div><div class="section-title">Consultas mensuales — Clínica Norte</div><div class="section-sub">Últimos 12 meses</div></div><span class="badge badge-green">+8% ↑</span></div>
+          <div class="bar-chart" id="dash-bar"></div>
+          <div style="display:flex;gap:6px;margin-top:4px" id="dash-labels"></div>
+        </div>
+        <div class="card">
+          <div class="section-header"><div class="section-title">Citas del día</div><span class="btn btn-outline" style="font-size:11px;padding:5px 10px" onclick="navigate('citas',document.querySelector('[onclick*=citas]'))">Ver todas</span></div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--card2);border-radius:10px"><span style="font-size:18px">🐶</span><div style="flex:1"><div style="font-size:13px;font-weight:500">Rocky — Control anual</div><div style="font-size:11px;color:var(--muted)">Dra. López (tú) · Carlos García</div></div><span class="badge badge-green">Completada</span><span style="font-size:12px;color:var(--muted);min-width:38px;text-align:right">10:00</span></div>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--card2);border-radius:10px"><span style="font-size:18px">🐱</span><div style="flex:1"><div style="font-size:13px;font-weight:500">Nala — Desparasitación</div><div style="font-size:11px;color:var(--muted)">Dra. López (tú) · Sofia Vega</div></div><span class="badge badge-amber">En curso</span><span style="font-size:12px;color:var(--muted);min-width:38px;text-align:right">11:00</span></div>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--card2);border-radius:10px"><span style="font-size:18px">🐶</span><div style="flex:1"><div style="font-size:13px;font-weight:500">Max — Post-operatorio</div><div style="font-size:11px;color:var(--muted)">Dr. Torres · Ana Martínez</div></div><span class="badge badge-blue">Pendiente</span><span style="font-size:12px;color:var(--muted);min-width:38px;text-align:right">12:00</span></div>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--card2);border-radius:10px"><span style="font-size:18px">🐰</span><div style="flex:1"><div style="font-size:13px;font-weight:500">Mochi — Revisión</div><div style="font-size:11px;color:var(--muted)">Dra. Campos · Luis Torres</div></div><span class="badge badge-blue">Pendiente</span><span style="font-size:12px;color:var(--muted);min-width:38px;text-align:right">14:00</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="grid-3">
+        <div class="card">
+          <div class="section-header"><div class="section-title">Mis veterinarios hoy</div></div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--green-soft);border-radius:9px"><div class="av" style="background:var(--accent-soft);color:var(--accent);width:28px;height:28px;font-size:11px">DL</div><div style="flex:1"><div style="font-size:12px;font-weight:500">Dra. López (tú)</div><div style="font-size:10px;color:var(--muted)">3 citas completadas</div></div><span class="badge badge-green">Activa</span></div>
+            <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--card2);border-radius:9px"><div class="av" style="background:var(--amber-soft);color:var(--amber);width:28px;height:28px;font-size:11px">DT</div><div style="flex:1"><div style="font-size:12px;font-weight:500">Dr. Torres</div><div style="font-size:10px;color:var(--muted)">2 citas hoy</div></div><span class="badge badge-amber">En consulta</span></div>
+            <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--card2);border-radius:9px"><div class="av" style="background:var(--pink-soft);color:var(--pink);width:28px;height:28px;font-size:11px">DC</div><div style="flex:1"><div style="font-size:12px;font-weight:500">Dra. Campos</div><div style="font-size:10px;color:var(--muted)">2 citas pendientes</div></div><span class="badge badge-blue">Disponible</span></div>
+            <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--card2);border-radius:9px"><div class="av" style="background:var(--purple-soft);color:var(--purple);width:28px;height:28px;font-size:11px">DM</div><div style="flex:1"><div style="font-size:12px;font-weight:500">Dr. Medina</div><div style="font-size:10px;color:var(--muted)">Sin citas hoy</div></div><span class="badge badge-muted">Libre</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="section-header"><div class="section-title">Distribución de pacientes</div></div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>🐶 Caninos</span><span style="color:var(--accent)">61%</span></div><div class="prog-bg"><div class="prog-fill" style="width:61%;background:var(--accent)"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>🐱 Felinos</span><span style="color:var(--blue)">27%</span></div><div class="prog-bg"><div class="prog-fill" style="width:27%;background:var(--blue)"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>🐰 Conejos</span><span style="color:var(--pink)">8%</span></div><div class="prog-bg"><div class="prog-fill" style="width:8%;background:var(--pink)"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>Otros</span><span style="color:var(--amber)">4%</span></div><div class="prog-bg"><div class="prog-fill" style="width:4%;background:var(--amber)"></div></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="section-header"><div class="section-title">Alertas de mi clínica</div></div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;gap:10px;padding:10px;background:var(--red-soft);border-radius:9px;border-left:3px solid var(--red)"><span style="font-size:16px">⚠️</span><div><div style="font-size:12px;font-weight:500;color:var(--red)">Vacuna vencida</div><div style="font-size:11px;color:var(--muted)">Rocky — Rabia (hace 3 días)</div></div></div>
+            <div style="display:flex;gap:10px;padding:10px;background:var(--amber-soft);border-radius:9px;border-left:3px solid var(--amber)"><span style="font-size:16px">🔔</span><div><div style="font-size:12px;font-weight:500;color:var(--amber)">Control pendiente</div><div style="font-size:11px;color:var(--muted)">Nala — Próximo en 2 días</div></div></div>
+            <div style="display:flex;gap:10px;padding:10px;background:var(--blue-soft);border-radius:9px;border-left:3px solid var(--blue)"><span style="font-size:16px">👨‍⚕️</span><div><div style="font-size:12px;font-weight:500;color:var(--blue)">Vet. sin citas mañana</div><div style="font-size:11px;color:var(--muted)">Dr. Medina — agenda vacía</div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MASCOTAS -->
+    <div class="screen" id="screen-mascotas">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div><div style="font-size:18px;font-weight:600">Mascotas</div><div style="font-size:12px;color:var(--muted)">342 pacientes en Clínica Norte</div></div>
+        <button class="btn btn-primary">+ Nueva Mascota</button>
+      </div>
+      <div class="scope-banner">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        Solo pacientes registrados en <strong style="margin:0 4px">Clínica Norte</strong>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap">
+        <span class="badge badge-muted" style="cursor:pointer;padding:6px 14px">Todas (342)</span>
+        <span class="badge badge-green" style="cursor:pointer;padding:6px 14px">🐶 Caninos (209)</span>
+        <span class="badge badge-blue" style="cursor:pointer;padding:6px 14px">🐱 Felinos (92)</span>
+        <span class="badge badge-pink" style="cursor:pointer;padding:6px 14px">🐰 Conejos (27)</span>
+        <span class="badge badge-amber" style="cursor:pointer;padding:6px 14px">Otros (14)</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px">
+        <div class="pet-card"><span style="font-size:32px;display:block;margin-bottom:10px">🐶</span><div style="font-size:14px;font-weight:600;margin-bottom:2px">Rocky</div><div style="font-size:11px;color:var(--muted)">Golden Retriever · 3 años</div><div style="font-size:11px;color:var(--muted);margin-top:4px">Carlos García</div><div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap"><span class="badge badge-green">Sano</span><span class="badge badge-amber">Vacuna próx.</span></div></div>
+        <div class="pet-card"><span style="font-size:32px;display:block;margin-bottom:10px">🐱</span><div style="font-size:14px;font-weight:600;margin-bottom:2px">Nala</div><div style="font-size:11px;color:var(--muted)">Persa · 4 años</div><div style="font-size:11px;color:var(--muted);margin-top:4px">Sofia Vega</div><div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap"><span class="badge badge-amber">Control pend.</span></div></div>
+        <div class="pet-card"><span style="font-size:32px;display:block;margin-bottom:10px">🐶</span><div style="font-size:14px;font-weight:600;margin-bottom:2px">Max</div><div style="font-size:11px;color:var(--muted)">Labrador · 5 años</div><div style="font-size:11px;color:var(--muted);margin-top:4px">Ana Martínez</div><div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap"><span class="badge badge-red">Post-op</span></div></div>
+        <div class="pet-card"><span style="font-size:32px;display:block;margin-bottom:10px">🐰</span><div style="font-size:14px;font-weight:600;margin-bottom:2px">Mochi</div><div style="font-size:11px;color:var(--muted)">Mini Lop · 1 año</div><div style="font-size:11px;color:var(--muted);margin-top:4px">Luis Torres</div><div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap"><span class="badge badge-green">Sano</span></div></div>
+        <div class="pet-card"><span style="font-size:32px;display:block;margin-bottom:10px">🐶</span><div style="font-size:14px;font-weight:600;margin-bottom:2px">Toby</div><div style="font-size:11px;color:var(--muted)">Beagle · 7 años</div><div style="font-size:11px;color:var(--muted);margin-top:4px">Jorge Méndez</div><div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap"><span class="badge badge-blue">Medicación</span></div></div>
+      </div>
+    </div>
+
+    <!-- CITAS -->
+    <div class="screen" id="screen-citas">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div><div style="font-size:18px;font-weight:600">Citas</div><div style="font-size:12px;color:var(--muted)">Gestión de turnos — Clínica Norte</div></div>
+        <button class="btn btn-primary">+ Nueva Cita</button>
+      </div>
+      <div class="scope-banner">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        Todas las citas de <strong style="margin:0 4px">Clínica Norte</strong> — podés ver y gestionar citas de todos tus veterinarios
+      </div>
+      <div class="grid-2">
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div class="card" style="padding:16px">
+            <div class="section-header" style="margin-bottom:14px"><div class="section-title">Marzo 2025</div><div style="display:flex;gap:6px"><div class="btn-icon" style="width:26px;height:26px">‹</div><div class="btn-icon" style="width:26px;height:26px">›</div></div></div>
+            <div class="cal-grid" id="cal2"></div>
+          </div>
+          <div class="card">
+            <div class="section-header"><div class="section-title">Resumen de hoy</div></div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 12px;background:var(--card2);border-radius:9px"><span style="font-size:13px">Pendientes</span><span class="badge badge-amber">4</span></div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 12px;background:var(--card2);border-radius:9px"><span style="font-size:13px">Completadas</span><span class="badge badge-green">8</span></div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 12px;background:var(--card2);border-radius:9px"><span style="font-size:13px">Mis citas personales</span><span class="badge badge-blue">3</span></div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 12px;background:var(--card2);border-radius:9px"><span style="font-size:13px">Canceladas</span><span class="badge badge-red">1</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="section-header"><div class="section-title">Todas las citas — 19 Mar</div><div style="display:flex;gap:6px"><span class="badge badge-muted" style="cursor:pointer">Todos los vets</span></div></div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;gap:10px;align-items:center;padding:11px;background:var(--card2);border-radius:10px;border-left:3px solid var(--green)"><span style="font-size:16px">🐶</span><div style="flex:1"><div style="font-size:13px;font-weight:500">Rocky · Control anual</div><div style="font-size:11px;color:var(--muted)">Dra. López (tú)</div></div><span class="badge badge-green">Completada</span><span style="font-size:11px;color:var(--muted);min-width:40px;text-align:right">10:00</span></div>
+            <div style="display:flex;gap:10px;align-items:center;padding:11px;background:var(--card2);border-radius:10px;border-left:3px solid var(--amber)"><span style="font-size:16px">🐱</span><div style="flex:1"><div style="font-size:13px;font-weight:500">Nala · Desparasitación</div><div style="font-size:11px;color:var(--muted)">Dra. López (tú)</div></div><span class="badge badge-amber">En curso</span><span style="font-size:11px;color:var(--muted);min-width:40px;text-align:right">11:00</span></div>
+            <div style="display:flex;gap:10px;align-items:center;padding:11px;background:var(--card2);border-radius:10px;border-left:3px solid var(--blue)"><span style="font-size:16px">🐶</span><div style="flex:1"><div style="font-size:13px;font-weight:500">Max · Post-operatorio</div><div style="font-size:11px;color:var(--muted)">Dr. Torres</div></div><span class="badge badge-blue">Pendiente</span><span style="font-size:11px;color:var(--muted);min-width:40px;text-align:right">12:00</span></div>
+            <div style="display:flex;gap:10px;align-items:center;padding:11px;background:var(--card2);border-radius:10px;border-left:3px solid var(--blue)"><span style="font-size:16px">🐰</span><div style="flex:1"><div style="font-size:13px;font-weight:500">Mochi · Revisión</div><div style="font-size:11px;color:var(--muted)">Dra. Campos</div></div><span class="badge badge-blue">Pendiente</span><span style="font-size:11px;color:var(--muted);min-width:40px;text-align:right">14:00</span></div>
+            <div style="display:flex;gap:10px;align-items:center;padding:11px;background:var(--card2);border-radius:10px;border-left:3px solid var(--green)"><span style="font-size:16px">🐶</span><div style="flex:1"><div style="font-size:13px;font-weight:500">Toby · Medicación</div><div style="font-size:11px;color:var(--muted)">Dr. Medina</div></div><span class="badge badge-green">Completada</span><span style="font-size:11px;color:var(--muted);min-width:40px;text-align:right">09:00</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FICHAS -->
+    <div class="screen" id="screen-fichas">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><div><div style="font-size:18px;font-weight:600">Fichas Clínicas</div><div style="font-size:12px;color:var(--muted)">Historial médico — Clínica Norte</div></div><button class="btn btn-primary">+ Nueva Ficha</button></div>
+      <div class="scope-banner"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Fichas de todos los pacientes de <strong style="margin:0 4px">Clínica Norte</strong></div>
+      <div class="grid-2" style="grid-template-columns:280px 1fr">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div class="search-wrap" style="width:100%"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;color:var(--dim)"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input placeholder="Buscar paciente..."/></div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;gap:10px;align-items:center;padding:12px;background:var(--accent-soft);border:1px solid var(--accent);border-radius:10px;cursor:pointer"><span style="font-size:22px">🐶</span><div><div style="font-size:13px;font-weight:600;color:var(--accent)">Rocky</div><div style="font-size:11px;color:var(--muted)">Atendido por ti</div></div><span class="badge badge-green" style="margin-left:auto">Sano</span></div>
+            <div style="display:flex;gap:10px;align-items:center;padding:12px;background:var(--card2);border-radius:10px;cursor:pointer"><span style="font-size:22px">🐱</span><div><div style="font-size:13px;font-weight:500">Nala</div><div style="font-size:11px;color:var(--muted)">Atendida por ti</div></div><span class="badge badge-amber" style="margin-left:auto">Pend.</span></div>
+            <div style="display:flex;gap:10px;align-items:center;padding:12px;background:var(--card2);border-radius:10px;cursor:pointer"><span style="font-size:22px">🐶</span><div><div style="font-size:13px;font-weight:500">Max</div><div style="font-size:11px;color:var(--muted)">Dr. Torres</div></div><span class="badge badge-red" style="margin-left:auto">Post-op</span></div>
+            <div style="display:flex;gap:10px;align-items:center;padding:12px;background:var(--card2);border-radius:10px;cursor:pointer"><span style="font-size:22px">🐰</span><div><div style="font-size:13px;font-weight:500">Mochi</div><div style="font-size:11px;color:var(--muted)">Dra. Campos</div></div><span class="badge badge-green" style="margin-left:auto">Sano</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;padding-bottom:18px;border-bottom:1px solid var(--border)">
+            <span style="font-size:44px">🐶</span>
+            <div style="flex:1"><div style="font-size:18px;font-weight:600">Rocky</div><div style="font-size:12px;color:var(--muted)">Golden Retriever · Macho · 3 años · 28 kg</div><div style="font-size:12px;color:var(--muted);margin-top:2px">Dueño: Carlos García</div></div>
+            <div style="text-align:right"><span class="badge badge-green" style="font-size:12px;padding:5px 12px">Sano</span><div style="font-size:10px;color:var(--muted);margin-top:6px">Clínica Norte</div></div>
+          </div>
+          <div class="tabs"><div class="tab active">Historial</div><div class="tab">Vacunas</div><div class="tab">Medicación</div></div>
+          <div class="timeline">
+            <div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-date">19 Mar 2025 · Dra. López (tú)</div><div class="timeline-title">Control anual completo</div><div class="timeline-sub">Examen físico. Peso: 28kg. Buen estado. Se recomienda vacunación antirrábica.</div></div>
+            <div class="timeline-item"><div class="timeline-dot" style="background:var(--blue)"></div><div class="timeline-date">5 Ene 2025 · Dra. López (tú)</div><div class="timeline-title">Otitis leve</div><div class="timeline-sub">Limpieza auricular + antibiótico tópico 7 días. Evolución favorable.</div></div>
+            <div class="timeline-item"><div class="timeline-dot" style="background:var(--amber)"></div><div class="timeline-date">22 Oct 2024 · Dr. Torres</div><div class="timeline-title">Vacunación quíntuple</div><div class="timeline-sub">Sin reacciones adversas. Próxima dosis: Oct 2025.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QR -->
+    <div class="screen" id="screen-qr">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><div><div style="font-size:18px;font-weight:600">Acceso QR</div><div style="font-size:12px;color:var(--muted)">Códigos de identificación — Clínica Norte</div></div><button class="btn btn-primary">+ Generar QR</button></div>
+      <div class="scope-banner"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>QR de pacientes de <strong style="margin:0 4px">Clínica Norte</strong></div>
+      <div class="grid-3" style="grid-template-columns:repeat(3,1fr)">
+        <div class="qr-card"><div class="qr-box">🐶</div><div class="qr-id">PET-0042</div><div style="font-size:14px;font-weight:600;margin-bottom:2px">Rocky</div><div style="font-size:12px;color:var(--muted);margin-bottom:12px">Carlos García</div><div style="display:flex;gap:8px;justify-content:center"><button class="btn btn-outline" style="font-size:11px">Descargar</button><button class="btn btn-outline" style="font-size:11px">Compartir</button></div></div>
+        <div class="qr-card"><div class="qr-box">🐱</div><div class="qr-id">PET-0201</div><div style="font-size:14px;font-weight:600;margin-bottom:2px">Nala</div><div style="font-size:12px;color:var(--muted);margin-bottom:12px">Sofia Vega</div><div style="display:flex;gap:8px;justify-content:center"><button class="btn btn-outline" style="font-size:11px">Descargar</button><button class="btn btn-outline" style="font-size:11px">Compartir</button></div></div>
+        <div class="qr-card"><div class="qr-box">🐶</div><div class="qr-id">PET-0305</div><div style="font-size:14px;font-weight:600;margin-bottom:2px">Max</div><div style="font-size:12px;color:var(--muted);margin-bottom:12px">Ana Martínez</div><div style="display:flex;gap:8px;justify-content:center"><button class="btn btn-outline" style="font-size:11px">Descargar</button><button class="btn btn-outline" style="font-size:11px">Compartir</button></div></div>
+      </div>
+    </div>
+
+    <!-- MI CLÍNICA -->
+    <div class="screen" id="screen-mi-clinica">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div><div style="font-size:18px;font-weight:600">Mi Clínica</div><div style="font-size:12px;color:var(--muted)">Configuración y datos de tu sucursal</div></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-outline">Editar datos</button>
+          <button class="btn btn-outline" style="color:var(--red);border-color:rgba(239,83,80,0.3)">Cerrar clínica temporalmente</button>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div style="display:flex;gap:14px;align-items:flex-start;margin-bottom:18px;padding-bottom:18px;border-bottom:1px solid var(--border)">
+            <div style="width:48px;height:48px;border-radius:14px;background:var(--amber-soft);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">🏥</div>
+            <div style="flex:1">
+              <div style="font-size:18px;font-weight:600">Clínica Norte</div>
+              <div style="font-size:12px;color:var(--muted)">Av. del Libertador 1234, Montevideo, UY</div>
+              <div style="display:flex;gap:8px;margin-top:8px"><span class="badge badge-green">Activa</span><span class="badge badge-amber">UY · +598</span></div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:1px solid var(--border)"><span style="color:var(--muted)">Teléfono</span><span>+598 2 555-0100</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:1px solid var(--border)"><span style="color:var(--muted)">Email</span><span>norte@vetcare.com</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:1px solid var(--border)"><span style="color:var(--muted)">Horario</span><span>Lun–Vie 8:00–20:00</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:1px solid var(--border)"><span style="color:var(--muted)">Veterinarios</span><span>8 registrados</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0"><span style="color:var(--muted)">Pacientes activos</span><span style="color:var(--accent);font-weight:500">342</span></div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div class="card">
+            <div class="section-title" style="margin-bottom:14px">Estadísticas del mes</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div style="background:var(--card2);border-radius:10px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:600;color:var(--accent)">87</div><div style="font-size:11px;color:var(--muted)">Consultas</div></div>
+              <div style="background:var(--card2);border-radius:10px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:600;color:var(--blue)">14</div><div style="font-size:11px;color:var(--muted)">Nuevos pacientes</div></div>
+              <div style="background:var(--card2);border-radius:10px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:600;color:var(--amber)">$12K</div><div style="font-size:11px;color:var(--muted)">Ingresos est.</div></div>
+              <div style="background:var(--card2);border-radius:10px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:600;color:var(--pink)">4.9</div><div style="font-size:11px;color:var(--muted)">Satisfacción</div></div>
+            </div>
+          </div>
+          <div class="card" style="background:var(--red-soft);border-color:rgba(239,83,80,0.2)">
+            <div style="display:flex;gap:12px;align-items:flex-start">
+              <span style="font-size:20px">⚠️</span>
+              <div>
+                <div style="font-size:13px;font-weight:600;color:var(--red);margin-bottom:4px">Zona de gestión crítica</div>
+                <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Estas acciones afectan el funcionamiento de tu clínica. El Super Admin será notificado.</div>
+                <div style="display:flex;flex-direction:column;gap:8px">
+                  <button class="btn btn-outline" style="justify-content:flex-start;font-size:12px">⏸ Suspender nuevas citas</button>
+                  <button class="btn btn-outline" style="justify-content:flex-start;font-size:12px;color:var(--amber);border-color:rgba(255,183,77,0.3)">🔧 Reportar incidencia técnica</button>
+                  <button class="btn btn-outline" style="justify-content:flex-start;font-size:12px;color:var(--red);border-color:rgba(239,83,80,0.3)">🔒 Cerrar clínica temporalmente</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VETERINARIOS -->
+    <div class="screen" id="screen-veterinarios">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><div><div style="font-size:18px;font-weight:600">Veterinarios</div><div style="font-size:12px;color:var(--muted)">8 profesionales en Clínica Norte</div></div><button class="btn btn-primary">+ Invitar Veterinario</button></div>
+      <div class="scope-banner"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Solo veterinarios de <strong style="margin:0 4px">Clínica Norte</strong> — no podés ver vets de otras clínicas</div>
+      <div class="card">
+        <table>
+          <thead><tr><th>Profesional</th><th>Especialidad</th><th>Citas hoy</th><th>Este mes</th><th>Estado</th><th>Acciones</th></tr></thead>
+          <tbody>
+            <tr><td><div class="avatar-cell"><div class="av" style="background:var(--accent-soft);color:var(--accent)">DL</div><div><div style="font-size:13px;font-weight:500">Dra. Ana López <span style="font-size:10px;color:var(--amber)">(tú)</span></div><div style="font-size:11px;color:var(--muted)">Mat. 12345</div></div></div></td><td>Medicina General</td><td>3 citas</td><td>42 consultas</td><td><span class="badge badge-green">Activa</span></td><td><span style="font-size:11px;color:var(--muted)">—</span></td></tr>
+            <tr><td><div class="avatar-cell"><div class="av" style="background:var(--amber-soft);color:var(--amber)">DT</div><div><div style="font-size:13px;font-weight:500">Dr. Torres</div><div style="font-size:11px;color:var(--muted)">Mat. 23456</div></div></div></td><td>Cirugía</td><td>2 citas</td><td>28 consultas</td><td><span class="badge badge-amber">En consulta</span></td><td><button class="btn btn-outline" style="font-size:11px;padding:4px 10px">Editar</button></td></tr>
+            <tr><td><div class="avatar-cell"><div class="av" style="background:var(--pink-soft);color:var(--pink)">DC</div><div><div style="font-size:13px;font-weight:500">Dra. Campos</div><div style="font-size:11px;color:var(--muted)">Mat. 34567</div></div></div></td><td>Dermatología</td><td>2 citas</td><td>31 consultas</td><td><span class="badge badge-blue">Disponible</span></td><td><button class="btn btn-outline" style="font-size:11px;padding:4px 10px">Editar</button></td></tr>
+            <tr><td><div class="avatar-cell"><div class="av" style="background:var(--purple-soft);color:var(--purple)">DM</div><div><div style="font-size:13px;font-weight:500">Dr. Medina</div><div style="font-size:11px;color:var(--muted)">Mat. 45678</div></div></div></td><td>Odontología</td><td>0 citas</td><td>19 consultas</td><td><span class="badge badge-muted">Libre</span></td><td><button class="btn btn-outline" style="font-size:11px;padding:4px 10px">Editar</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- USUARIOS -->
+    <div class="screen" id="screen-usuarios">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><div><div style="font-size:18px;font-weight:600">Usuarios</div><div style="font-size:12px;color:var(--muted)">Propietarios de pacientes en Clínica Norte</div></div><button class="btn btn-primary">+ Nuevo Usuario</button></div>
+      <div class="scope-banner"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Solo usuarios con mascotas en <strong style="margin:0 4px">Clínica Norte</strong></div>
+      <div class="card">
+        <table>
+          <thead><tr><th>Usuario</th><th>Email</th><th>Mascotas en mi clínica</th><th>Última visita</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr><td><div class="avatar-cell"><div class="av" style="background:var(--accent-soft);color:var(--accent)">CG</div><div><div style="font-size:13px;font-weight:500">Carlos García</div><div style="font-size:11px;color:var(--muted)">+598 9 555-0001</div></div></div></td><td>c.garcia@email.com</td><td><span class="badge badge-green">Rocky, Bruno</span></td><td>Hoy 10:00</td><td><span class="badge badge-green">Activo</span></td></tr>
+            <tr><td><div class="avatar-cell"><div class="av" style="background:var(--pink-soft);color:var(--pink)">SV</div><div><div style="font-size:13px;font-weight:500">Sofia Vega</div><div style="font-size:11px;color:var(--muted)">+598 9 555-0006</div></div></div></td><td>s.vega@email.com</td><td><span class="badge badge-blue">Nala, Canela</span></td><td>Ayer</td><td><span class="badge badge-green">Activo</span></td></tr>
+            <tr><td><div class="avatar-cell"><div class="av" style="background:var(--amber-soft);color:var(--amber)">AM</div><div><div style="font-size:13px;font-weight:500">Ana Martínez</div><div style="font-size:11px;color:var(--muted)">+54 11 5555-0004</div></div></div></td><td>a.martinez@email.com</td><td><span class="badge badge-red">Max (post-op)</span></td><td>Hoy 12:00</td><td><span class="badge badge-green">Activo</span></td></tr>
+            <tr><td><div class="avatar-cell"><div class="av" style="background:var(--blue-soft);color:var(--blue)">LT</div><div><div style="font-size:13px;font-weight:500">Luis Torres</div><div style="font-size:11px;color:var(--muted)">+598 9 555-0003</div></div></div></td><td>l.torres@email.com</td><td><span class="badge badge-green">Mochi</span></td><td>Mar 14</td><td><span class="badge badge-green">Activo</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- REPORTES -->
+    <div class="screen" id="screen-reportes">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><div><div style="font-size:18px;font-weight:600">Reportes</div><div style="font-size:12px;color:var(--muted)">Estadísticas de Clínica Norte</div></div><div style="display:flex;gap:8px"><button class="btn btn-outline">Exportar PDF</button></div></div>
+      <div class="scope-banner"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Reportes exclusivos de <strong style="margin:0 4px">Clínica Norte</strong> — no incluye otras sucursales</div>
+      <div class="grid-4" style="margin-bottom:20px">
+        <div class="stat-card"><div class="stat-label">Consultas este mes</div><div class="stat-value" style="color:var(--accent)">87</div><div class="stat-sub" style="color:var(--green)">+11% vs mes ant.</div></div>
+        <div class="stat-card"><div class="stat-label">Nuevos pacientes</div><div class="stat-value" style="color:var(--blue)">14</div><div class="stat-sub" style="color:var(--green)">+7% vs mes ant.</div></div>
+        <div class="stat-card"><div class="stat-label">Ingresos estimados</div><div class="stat-value" style="color:var(--amber)">$12K</div><div class="stat-sub" style="color:var(--green)">+18% vs mes ant.</div></div>
+        <div class="stat-card"><div class="stat-label">Satisfacción</div><div class="stat-value" style="color:var(--pink)">4.9</div><div class="stat-sub">⭐ promedio</div></div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="section-header"><div class="section-title">Consultas por mes — Clínica Norte</div></div>
+          <div class="bar-chart" id="rep-bar2"></div>
+          <div style="display:flex;gap:6px;margin-top:4px" id="rep-labels2"></div>
+        </div>
+        <div class="card">
+          <div class="section-header"><div class="section-title">Rendimiento por veterinario</div></div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>Dra. López (tú)</span><span style="color:var(--accent)">42 consultas</span></div><div class="prog-bg"><div class="prog-fill" style="width:85%;background:var(--accent)"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>Dr. Torres</span><span style="color:var(--blue)">28 consultas</span></div><div class="prog-bg"><div class="prog-fill" style="width:57%;background:var(--blue)"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>Dra. Campos</span><span style="color:var(--pink)">31 consultas</span></div><div class="prog-bg"><div class="prog-fill" style="width:63%;background:var(--pink)"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>Dr. Medina</span><span style="color:var(--amber)">19 consultas</span></div><div class="prog-bg"><div class="prog-fill" style="width:39%;background:var(--amber)"></div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NOTIFICACIONES -->
+    <div class="screen" id="screen-notificaciones">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px"><div><div style="font-size:18px;font-weight:600">Notificaciones</div><div style="font-size:12px;color:var(--muted)">3 sin leer</div></div><button class="btn btn-outline">Marcar todas como leídas</button></div>
+      <div class="card">
+        <div class="notif-item"><div class="notif-dot2"></div><div style="flex:1"><div style="font-size:13px;font-weight:500">⚠️ Vacuna vencida — Rocky (Clínica Norte)</div><div style="font-size:11px;color:var(--muted)">La vacuna antirrábica de Rocky venció hace 3 días.</div></div><div style="font-size:10px;color:var(--dim);margin-left:auto;flex-shrink:0">Hace 2h</div></div>
+        <div class="notif-item"><div class="notif-dot2"></div><div style="flex:1"><div style="font-size:13px;font-weight:500">📅 Cita agendada — Rocky</div><div style="font-size:11px;color:var(--muted)">Carlos García agendó una cita para el 22 de marzo a las 10:00.</div></div><div style="font-size:10px;color:var(--dim);margin-left:auto;flex-shrink:0">Hace 3h</div></div>
+        <div class="notif-item"><div class="notif-dot2"></div><div style="flex:1"><div style="font-size:13px;font-weight:500">👨‍⚕️ Dr. Medina sin citas mañana</div><div style="font-size:11px;color:var(--muted)">La agenda del Dr. Medina está vacía para mañana. ¿Asignar turnos?</div></div><div style="font-size:10px;color:var(--dim);margin-left:auto;flex-shrink:0">Hace 5h</div></div>
+        <div class="notif-item"><div class="notif-dot2 read"></div><div style="flex:1"><div style="font-size:13px;color:var(--muted)">🐾 Nueva mascota registrada</div><div style="font-size:11px;color:var(--muted)">Sofia Vega registró a "Canela" en tu clínica.</div></div><div style="font-size:10px;color:var(--dim);margin-left:auto;flex-shrink:0">Ayer</div></div>
+        <div class="notif-item"><div class="notif-dot2 read"></div><div style="flex:1"><div style="font-size:13px;color:var(--muted)">✅ Cita completada — Nala</div><div style="font-size:11px;color:var(--muted)">Completaste exitosamente la consulta de desparasitación de Nala.</div></div><div style="font-size:10px;color:var(--dim);margin-left:auto;flex-shrink:0">Ayer</div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+<script>
+function navigate(screen,el){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+screen).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  if(el)el.classList.add('active');
+  const t={dashboard:'Dashboard',mascotas:'Mascotas',citas:'Citas',fichas:'Fichas Clínicas',qr:'Acceso QR','mi-clinica':'Mi Clínica',veterinarios:'Veterinarios',usuarios:'Usuarios',reportes:'Reportes',notificaciones:'Notificaciones'};
+  document.getElementById('topbar-title').textContent=t[screen]||screen;
+}
+function buildCal(id){
+  const c=document.getElementById(id);if(!c)return;
+  const days=['L','M','X','J','V','S','D'],events=[3,7,12,14,19,22,25];
+  let h=days.map(d=>`<div class="cal-day-label">${d}</div>`).join('');
+  for(let i=0;i<5;i++)h+=`<div class="cal-day other-month"></div>`;
+  for(let d=1;d<=31;d++){h+=`<div class="cal-day${d===19?' today':''}${events.includes(d)&&d!==19?' has-event':''}">${d}</div>`;}
+  c.innerHTML=h;
+}
+function buildBar(id,lid,data,labels,color){
+  const e=document.getElementById(id),l=document.getElementById(lid);if(!e)return;
+  const mx=Math.max(...data);
+  e.innerHTML=data.map((v,i)=>`<div class="bar" style="height:${(v/mx)*100}%;background:${color};opacity:${i===3?1:0.55}"></div>`).join('');
+  l.innerHTML=labels.map(x=>`<div class="bar-label" style="flex:1">${x}</div>`).join('');
+}
+buildCal('cal2');
+buildBar('dash-bar','dash-labels',[30,38,42,87,55,48,52,61,58,67,51,70],['E','F','M','A','M','J','J','A','S','O','N','D'],'#00c896');
+buildBar('rep-bar2','rep-labels2',[30,38,42,87,55,48,52,61,58,67,51,70],['E','F','M','A','M','J','J','A','S','O','N','D'],'#4fc3f7');
+</script>
+</body>
+</html>
